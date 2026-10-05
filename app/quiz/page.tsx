@@ -7,6 +7,7 @@ import QuestionCard from "@/components/QuestionCard";
 import { QUESTIONS } from "@/data/questions";
 import {
   ANSWER_COUNT,
+  clearAnswers,
   loadOrder,
   loadPartial,
   saveAnswers,
@@ -26,18 +27,26 @@ export default function QuizPage() {
   const [ready, setReady] = useState(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Resume from sessionStorage on mount (avoids hydration mismatch).
+  // Resume mid-quiz from sessionStorage on mount (avoids hydration mismatch).
+  // A *complete* saved set starts fresh instead: it usually means the user
+  // just viewed a shared result link (which stores all 20 answers), and
+  // resuming it would scatter old selections across the shuffled order.
   useEffect(() => {
-    const savedOrder = loadOrder() ?? shuffledOrder();
-    saveOrder(savedOrder);
-    setOrder(savedOrder);
-
     const saved = loadPartial();
-    if (saved) {
+    const complete = saved !== null && saved.every((a) => a >= 1);
+
+    if (saved && !complete) {
+      const savedOrder = loadOrder() ?? shuffledOrder();
+      saveOrder(savedOrder);
+      setOrder(savedOrder);
       setAnswers(saved);
-      // Resume at the first unanswered question in display order.
       const firstUnanswered = savedOrder.findIndex((qi) => saved[qi] < 1);
       setCurrent(firstUnanswered === -1 ? 0 : firstUnanswered);
+    } else {
+      if (complete) clearAnswers();
+      const freshOrder = shuffledOrder();
+      saveOrder(freshOrder);
+      setOrder(freshOrder);
     }
     setReady(true);
   }, []);
