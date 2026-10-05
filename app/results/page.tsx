@@ -119,6 +119,8 @@ export default function ResultsPage() {
   const [missing, setMissing] = useState(false);
   const [shareState, setShareState] = useState<ShareState>("idle");
   const [copiedText, setCopiedText] = useState(false);
+  const [copiedReflect, setCopiedReflect] = useState(false);
+  const [copiedWork, setCopiedWork] = useState(false);
   const shareUrlRef = useRef("");
 
   useEffect(() => {
@@ -251,6 +253,61 @@ export default function ResultsPage() {
     setTimeout(() => setCopiedText(false), 2500);
   }, [result]);
 
+  // Weakest dimension → reflection prompts. Strongest → how-to-work card.
+  const weakest = useMemo(() => {
+    if (!result) return null;
+    return [...result.results].sort((a, b) => a.average - b.average)[0];
+  }, [result]);
+
+  const strongest = useMemo(() => {
+    if (!result) return null;
+    return [...result.results].sort((a, b) => b.average - a.average)[0];
+  }, [result]);
+
+  const handleCopyReflection = useCallback(async () => {
+    if (!result || !weakest) return;
+    const p = PROFILES[weakest.letter];
+    const lines: string[] = [
+      `Reflection — my ${p.name} (${weakest.letter}) is ${weakest.average.toFixed(1)} (${weakest.rank})`,
+      "",
+      ...p.reflection.map((q, i) => `${i + 1}. ${q}`),
+      "",
+      "My notes:",
+      "",
+      "",
+      "",
+      "— Weekly report, Future Leaders — Leadership I",
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopiedReflect(true);
+    } catch {
+      window.prompt("Copy your reflection prompts:", lines.join("\n"));
+    }
+    setTimeout(() => setCopiedReflect(false), 2500);
+  }, [result, weakest]);
+
+  const handleCopyWork = useCallback(async () => {
+    if (!result || !strongest) return;
+    const p = PROFILES[strongest.letter];
+    const lines: string[] = [
+      `How to work with me — ${result.code}`,
+      `I lead through ${p.name}.`,
+      "",
+      `Feedback: ${p.work.feedback}`,
+      `Delegation: ${p.work.delegate}`,
+      `Pitching ideas: ${p.work.pitch}`,
+      `What I need: ${p.work.need}`,
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopiedWork(true);
+    } catch {
+      window.prompt("Copy your work style card:", lines.join("\n"));
+    }
+    setTimeout(() => setCopiedWork(false), 2500);
+  }, [result, strongest]);
+
   if (missing) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center px-6 text-center">
@@ -352,6 +409,46 @@ export default function ResultsPage() {
         </h2>
         <p className="mt-4 leading-relaxed text-white/65">{result.summary}</p>
       </section>
+
+      {/* Reflection */}
+      {weakest && (
+        <section className="border-t border-white/10 py-10">
+          <h2 className="font-display text-xl font-semibold text-white">
+            Reflect on your growth edge
+          </h2>
+          <p className="mt-2 text-sm text-white/45">
+            {PROFILES[weakest.letter].name} is your lowest dimension (
+            {weakest.average.toFixed(1)} — {weakest.rank}). Three questions for
+            your weekly report or journal.
+          </p>
+          <ol className="mt-6 space-y-4">
+            {PROFILES[weakest.letter].reflection.map((q, i) => (
+              <li
+                key={i}
+                className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+              >
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-display text-sm font-bold"
+                  style={{
+                    backgroundColor: `${PROFILES[weakest.letter].color}26`,
+                    color: PROFILES[weakest.letter].color,
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <p className="text-sm leading-relaxed text-white/65">{q}</p>
+              </li>
+            ))}
+          </ol>
+          <button
+            type="button"
+            onClick={handleCopyReflection}
+            className="mt-6 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+          >
+            {copiedReflect ? "Copied ✓" : "Copy prompts for my report"}
+          </button>
+        </section>
+      )}
 
       {/* Dimensions */}
       <section className="border-t border-white/10 py-10">
@@ -461,6 +558,49 @@ export default function ResultsPage() {
           )}
         </div>
       </section>
+
+      {/* How to work with me */}
+      {strongest && (
+        <section className="border-t border-white/10 py-10">
+          <h2 className="font-display text-xl font-semibold text-white">
+            How to work with me
+          </h2>
+          <p className="mt-2 text-sm text-white/45">
+            Generated from your strongest dimension — {PROFILES[strongest.letter].name} (
+            {strongest.average.toFixed(1)}). Share this with teammates so they
+            know what works on you.
+          </p>
+          <div className="mt-6 space-y-3">
+            {(
+              [
+                ["Feedback", "feedback"],
+                ["Delegation", "delegate"],
+                ["Pitching ideas", "pitch"],
+                ["What I need", "need"],
+              ] as const
+            ).map(([label, key]) => (
+              <div
+                key={key}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
+                  {label}
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/65">
+                  {PROFILES[strongest.letter].work[key]}
+                </p>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyWork}
+            className="mt-6 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+          >
+            {copiedWork ? "Copied ✓" : "Copy work style card"}
+          </button>
+        </section>
+      )}
 
       {/* Conflicts */}
       {result.conflicts.length > 0 && (

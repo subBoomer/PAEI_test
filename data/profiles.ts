@@ -9,6 +9,8 @@ export interface DimensionProfile {
   roles: string[];
   nickname: string;
   color: string;
+  reflection: string[];
+  work: { feedback: string; delegate: string; pitch: string; need: string };
 }
 
 export const PROFILES: Record<Dimension, DimensionProfile> = {
@@ -35,6 +37,17 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     ],
     nickname: "Lone Ranger",
     color: "#f59e0b",
+    reflection: [
+      "Recall a task you pushed through on willpower alone. What did it cost — your energy, the quality, or a relationship?",
+      "When did you last do something yourself that you could have delegated? What made you distrust the handoff?",
+      "Would your teammates say you care more about shipped results or about the people doing the shipping?",
+    ],
+    work: {
+      feedback: "Lead with the result. What shipped, what didn't, what's next — skip the preamble.",
+      delegate: "Hand me a concrete outcome and a deadline. Check progress, not process.",
+      pitch: "Frame it as action: what we do, how fast, what it produces. Vision alone loses me.",
+      need: "People who finish — and someone to remind me that done beats perfect.",
+    },
   },
   A: {
     letter: "A",
@@ -59,6 +72,17 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     ],
     nickname: "Bureaucrat",
     color: "#3b82f6",
+    reflection: [
+      "Think of a project that went off the rails. What process, if any, was already missing when it began?",
+      "When did you last improvise in a situation that clearly needed a plan? What happened next?",
+      "Name one recurring mess in your studies or side projects that a simple checklist would prevent. Why hasn't it been made yet?",
+    ],
+    work: {
+      feedback: "Be specific. Bring data, name the process that failed, propose the fix.",
+      delegate: "Set scope, roles, and timeline up front. I'll run it tightly once the frame is clear.",
+      pitch: "Show the plan behind the idea: steps, owners, risks. Structure earns my trust.",
+      need: "People who respect agreed processes — and tell me when a rule has become a cage.",
+    },
   },
   E: {
     letter: "E",
@@ -83,6 +107,17 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     ],
     nickname: "Arsonist",
     color: "#a855f7",
+    reflection: [
+      "When did you last feel excited by an idea and not act on it? What stopped you?",
+      "What do you keep doing 'the way it has always been done' that you secretly suspect could be better?",
+      "Where do you want to be in three years — and what is one step you could take this month toward it?",
+    ],
+    work: {
+      feedback: "Be candid and fast. A hard truth early beats a comfortable story late.",
+      delegate: "Give me the problem, not the solution. Check direction, not steps.",
+      pitch: "Lead with the future state and why it matters. Details can follow.",
+      need: "Builders who turn sparks into shipped work — and ground me when I start too many fires.",
+    },
   },
   I: {
     letter: "I",
@@ -106,6 +141,17 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     ],
     nickname: "Super-Follower",
     color: "#10b981",
+    reflection: [
+      "When did you last sense that someone on your team was struggling — before they said anything?",
+      "Describe a conflict you chose to avoid. What did that cost, and what would you do differently?",
+      "Whose perspective do you habitually leave out of your decisions, and what would change if you included it?",
+    ],
+    work: {
+      feedback: "Be honest and private. Hard messages one-on-one, never in front of the group.",
+      delegate: "Tell me why it matters to the team. I'll carry it if people feel the purpose.",
+      pitch: "Connect it to people: who it helps, how the team wins, what it feels like to build it.",
+      need: "Allies who say the quiet part out loud — and someone to back me when a decision gets unpopular.",
+    },
   },
 };
 

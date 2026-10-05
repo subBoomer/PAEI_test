@@ -127,6 +127,41 @@ export default function Home() {
         </ol>
       </section>
 
+      <section className="border-t border-white/10 py-16">
+        <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">
+          More tools
+        </h2>
+        <p className="mt-3 max-w-2xl text-white/50">
+          Beyond the individual test — for co-founders, teams, and teachers.
+        </p>
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Link
+            href="/pair"
+            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
+          >
+            <h3 className="font-display text-lg font-semibold text-white">
+              Co-founder pair check →
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Paste two result links. See where you cover each other&apos;s
+              gaps and which tensions run between you.
+            </p>
+          </Link>
+          <Link
+            href="/cohort"
+            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
+          >
+            <h3 className="font-display text-lg font-semibold text-white">
+              Cohort view for teachers →
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Paste everyone&apos;s links. Get the group snapshot: collective
+              strengths, missing dimensions, roles to assign on purpose.
+            </p>
+          </Link>
+        </div>
+      </section>
+
       <footer className="border-t border-white/10 py-10">
         <p className="text-sm text-white/40">
           Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders —
