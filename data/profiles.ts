@@ -6,6 +6,7 @@ export interface DimensionProfile {
   meaning: string;
   strengths: string[];
   weaknesses: string[];
+  roles: string[];
   nickname: string;
   color: string;
 }
@@ -27,6 +28,11 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "May skip processes",
       "Can be impatient with people",
     ],
+    roles: [
+      "Delivery & execution lead",
+      "Project manager",
+      "Growth & sales — the closing side",
+    ],
     nickname: "Lone Ranger",
     color: "#f59e0b",
   },
@@ -45,6 +51,11 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "Can be slow to start",
       "May resist change",
       "Can be rigid with rules",
+    ],
+    roles: [
+      "Operations & finance lead",
+      "Process & analytics owner",
+      "Product ops & quality",
     ],
     nickname: "Bureaucrat",
     color: "#3b82f6",
@@ -65,6 +76,11 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "Can get scattered",
       "Starts more than it finishes",
     ],
+    roles: [
+      "Founder / CEO track",
+      "Innovation & strategy lead",
+      "Fundraising & partnerships",
+    ],
     nickname: "Arsonist",
     color: "#a855f7",
   },
@@ -82,6 +98,11 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     weaknesses: [
       "May avoid hard decisions",
       "Can prioritize feelings over results",
+    ],
+    roles: [
+      "Team & culture lead",
+      "Client relations & community",
+      "Customer success & mediation",
     ],
     nickname: "Super-Follower",
     color: "#10b981",

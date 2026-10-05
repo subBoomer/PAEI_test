@@ -118,6 +118,7 @@ export default function ResultsPage() {
   const [answers, setAnswers] = useState<number[] | null>(null);
   const [missing, setMissing] = useState(false);
   const [shareState, setShareState] = useState<ShareState>("idle");
+  const [copiedText, setCopiedText] = useState(false);
   const shareUrlRef = useRef("");
 
   useEffect(() => {
@@ -208,6 +209,48 @@ export default function ResultsPage() {
     setTimeout(() => setShareState("idle"), 2500);
   }, []);
 
+  const handleCopyResults = useCallback(async () => {
+    if (!result) return;
+    const lines: string[] = [];
+    lines.push(`My PAEI code: ${result.code}`);
+    if (result.nickname) lines.push(`(Pure form: ${result.nickname})`);
+    lines.push("");
+    for (const r of result.results) {
+      const p = PROFILES[r.letter];
+      lines.push(
+        `${r.capital ? p.letter : p.letter.toLowerCase()} — ${p.name}: ${r.average.toFixed(1)} (${r.rank})`
+      );
+    }
+    lines.push("");
+    lines.push(result.summary);
+    if (result.combos.length > 0) {
+      lines.push("");
+      lines.push("Combinations:");
+      for (const { combo } of result.combos) {
+        lines.push(`• ${combo.letters} — ${combo.name}: ${combo.description}`);
+      }
+    }
+    if (result.conflicts.length > 0) {
+      lines.push("");
+      lines.push("Natural conflicts:");
+      for (const { conflict, kind } of result.conflicts) {
+        lines.push(
+          `• ${conflict.a}-${conflict.b} ${conflict.title} (${kind})`
+        );
+      }
+    }
+    lines.push("");
+    lines.push("— Taken with the PAEI Test");
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopiedText(true);
+    } catch {
+      // Clipboard blocked — fall back to a prompt so the text is still reachable.
+      window.prompt("Copy your results:", lines.join("\n"));
+    }
+    setTimeout(() => setCopiedText(false), 2500);
+  }, [result]);
+
   if (missing) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center px-6 text-center">
@@ -286,6 +329,13 @@ export default function ResultsPage() {
         >
           {shareState === "copied" ? "Copied ✓" : "Copy result link"}
         </button>
+        <button
+          type="button"
+          onClick={handleCopyResults}
+          className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+        >
+          {copiedText ? "Copied ✓" : "Copy results"}
+        </button>
         <Link
           href="/quiz"
           onClick={() => clearAnswers()}
@@ -349,6 +399,68 @@ export default function ResultsPage() {
           </div>
         </section>
       )}
+
+      {/* Startup fit */}
+      <section className="border-t border-white/10 py-10">
+        <h2 className="font-display text-xl font-semibold text-white">
+          Where you fit in a startup
+        </h2>
+        <p className="mt-2 text-sm text-white/45">
+          Roles your natural strengths point toward — drawn from your dominant
+          dimensions.
+        </p>
+        <div className="mt-6 space-y-4">
+          {result.results
+            .filter((r) => r.capital)
+            .map((r) => {
+              const p = PROFILES[r.letter];
+              return (
+                <div
+                  key={r.letter}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex h-10 w-10 items-center justify-center rounded-xl font-display text-xl font-bold"
+                      style={{
+                        backgroundColor: `${p.color}26`,
+                        color: p.color,
+                      }}
+                    >
+                      {p.letter}
+                    </span>
+                    <div>
+                      <h3 className="font-display text-base font-semibold text-white">
+                        {p.name}
+                      </h3>
+                      <p className="text-xs text-white/40">
+                        {r.rank} · {r.average.toFixed(1)}
+                      </p>
+                    </div>
+                  </div>
+                  <ul className="mt-4 space-y-1.5">
+                    {p.roles.map((role) => (
+                      <li key={role} className="text-sm text-white/60">
+                        {role}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          {result.results.every((r) => !r.capital) && (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <p className="text-sm leading-relaxed text-white/60">
+                No dominant dimension means no default seat — you are still
+                deciding where you fit. That is an advantage in a startup: you
+                can plug into whichever role the team is missing. Try leaning
+                into one dimension for a semester and see which seat feels like
+                yours.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Conflicts */}
       {result.conflicts.length > 0 && (

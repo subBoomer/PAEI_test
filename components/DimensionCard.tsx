@@ -89,6 +89,19 @@ export default function DimensionCard({
           </ul>
         </div>
       </div>
+
+      <div className="mt-5">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">
+          Where this shows up in a startup
+        </h4>
+        <ul className="mt-2 space-y-1.5">
+          {profile.roles.map((r) => (
+            <li key={r} className="text-sm text-white/60">
+              {r}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
