@@ -210,7 +210,7 @@ export default function ResultsPage() {
 
   if (missing) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-center px-6 text-center">
+      <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center px-6 text-center">
         <h1 className="font-display text-3xl font-bold text-white">
           No results found
         </h1>
@@ -229,7 +229,7 @@ export default function ResultsPage() {
 
   if (!result) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-dvh items-center justify-center">
         <p className="text-white/40">Loading…</p>
       </main>
     );
@@ -247,7 +247,7 @@ export default function ResultsPage() {
       : "Share as image";
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6">
       <header className="flex items-center justify-between py-6">
         <Link
           href="/"
@@ -308,7 +308,7 @@ export default function ResultsPage() {
         <h2 className="font-display text-xl font-semibold text-white">
           Your four dimensions
         </h2>
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {result.results.map((r) => (
             <DimensionCard key={r.letter} result={r} />
           ))}

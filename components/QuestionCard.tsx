@@ -1,7 +1,6 @@
 "use client";
 
 import ScaleSelector from "./ScaleSelector";
-import { PROFILES } from "@/data/profiles";
 import type { Question } from "@/data/questions";
 
 interface QuestionCardProps {
@@ -15,23 +14,9 @@ export default function QuestionCard({
   value,
   onChange,
 }: QuestionCardProps) {
-  const profile = PROFILES[question.dimension];
-
   return (
     <div className="w-full">
-      <div className="flex items-center gap-2">
-        <span
-          className="flex h-6 w-6 items-center justify-center rounded-md font-display text-xs font-bold"
-          style={{ backgroundColor: `${profile.color}26`, color: profile.color }}
-        >
-          {profile.letter}
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wider text-white/40">
-          {profile.name}
-        </span>
-      </div>
-
-      <h2 className="mt-5 font-display text-2xl font-semibold leading-snug text-white sm:text-3xl">
+      <h2 className="font-display text-2xl font-semibold leading-snug text-white sm:text-3xl">
         {question.text}
       </h2>
 

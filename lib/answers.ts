@@ -1,4 +1,5 @@
 const STORAGE_KEY = "paei-answers-v1";
+const ORDER_KEY = "paei-order-v1";
 export const ANSWER_COUNT = 20;
 
 /** Strict: exactly 20 answers, each 1-5. */
@@ -29,6 +30,48 @@ export function saveAnswers(answers: number[]): void {
 export function clearAnswers(): void {
   if (typeof window === "undefined") return;
   window.sessionStorage.removeItem(STORAGE_KEY);
+  // Clear the question order too, so a retake gets a fresh shuffle.
+  window.sessionStorage.removeItem(ORDER_KEY);
+}
+
+/**
+ * The display order for the quiz: indices into QUESTIONS.
+ * Answers are always stored by question index, never by display position,
+ * so shuffling never affects scoring or share links.
+ */
+export function loadOrder(): number[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(ORDER_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length !== ANSWER_COUNT) return null;
+    if (
+      !parsed.every(
+        (n) => Number.isInteger(n) && n >= 0 && n < ANSWER_COUNT
+      )
+    )
+      return null;
+    if (new Set(parsed).size !== ANSWER_COUNT) return null;
+    return parsed as number[];
+  } catch {
+    return null;
+  }
+}
+
+export function saveOrder(order: number[]): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(ORDER_KEY, JSON.stringify(order));
+}
+
+/** Fisher–Yates shuffle over question indices 0..19. */
+export function shuffledOrder(): number[] {
+  const order = Array.from({ length: ANSWER_COUNT }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
 }
 
 export function answersFromHash(hash: string): number[] | null {

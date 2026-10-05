@@ -25,7 +25,7 @@ export default function ResultCard({
               key={r.letter}
               className="font-display font-bold leading-none"
               style={{
-                fontSize: "clamp(4rem, 18vw, 9rem)",
+                fontSize: "clamp(3.5rem, 17vw, 9rem)",
                 color: profile.color,
                 opacity: r.rank === "Missing" ? 0.25 : r.capital ? 1 : 0.55,
               }}

@@ -26,7 +26,7 @@ const STEPS = [
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-6">
       <header className="flex items-center justify-between py-6">
         <span className="font-display text-sm font-medium tracking-wide text-white/60">
           PAEI

@@ -40,7 +40,10 @@ export default function ScaleSelector({
               </span>
               <span
                 className={[
-                  "mt-0.5 text-[10px] font-medium sm:text-xs",
+                  // Word labels only from sm up — on phones the legend
+                  // "1 = never · 5 = always" below carries the meaning,
+                  // and "Sometimes" would overflow a ~48px button.
+                  "mt-0.5 hidden text-[10px] font-medium sm:block sm:text-xs",
                   selected ? "text-black/60" : "text-white/40",
                 ].join(" ")}
               >

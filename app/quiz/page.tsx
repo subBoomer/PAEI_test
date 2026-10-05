@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QuestionCard from "@/components/QuestionCard";
 import { QUESTIONS } from "@/data/questions";
-import { PROFILES } from "@/data/profiles";
 import {
   ANSWER_COUNT,
+  loadOrder,
   loadPartial,
   saveAnswers,
+  saveOrder,
+  shuffledOrder,
 } from "@/lib/answers";
 
 export default function QuizPage() {
@@ -18,15 +20,23 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<number[]>(() =>
     Array(ANSWER_COUNT).fill(0)
   );
+  // Display order = shuffled question indices. Answers are stored by
+  // question index, so shuffling never affects scoring or share links.
+  const [order, setOrder] = useState<number[] | null>(null);
   const [ready, setReady] = useState(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resume from sessionStorage on mount (avoids hydration mismatch).
   useEffect(() => {
+    const savedOrder = loadOrder() ?? shuffledOrder();
+    saveOrder(savedOrder);
+    setOrder(savedOrder);
+
     const saved = loadPartial();
     if (saved) {
       setAnswers(saved);
-      const firstUnanswered = saved.findIndex((a) => a < 1);
+      // Resume at the first unanswered question in display order.
+      const firstUnanswered = savedOrder.findIndex((qi) => saved[qi] < 1);
       setCurrent(firstUnanswered === -1 ? 0 : firstUnanswered);
     }
     setReady(true);
@@ -40,9 +50,11 @@ export default function QuizPage() {
 
   const handleSelect = useCallback(
     (value: number) => {
+      if (!order) return;
+      const questionIndex = order[current];
       setAnswers((prev) => {
         const next = [...prev];
-        next[current] = value;
+        next[questionIndex] = value;
         saveAnswers(next);
         return next;
       });
@@ -56,7 +68,7 @@ export default function QuizPage() {
         }
       }, 280);
     },
-    [current, router]
+    [current, order, router]
   );
 
   const goBack = useCallback(() => {
@@ -64,21 +76,20 @@ export default function QuizPage() {
     setCurrent((c) => Math.max(0, c - 1));
   }, []);
 
-  if (!ready) {
+  if (!ready || !order) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-dvh items-center justify-center">
         <p className="text-white/40">Loading…</p>
       </main>
     );
   }
 
-  const question = QUESTIONS[current];
-  const profile = PROFILES[question.dimension];
+  const question = QUESTIONS[order[current]];
   const answeredCount = answers.filter((a) => a >= 1).length;
   const progress = ((current + 1) / ANSWER_COUNT) * 100;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-6">
       <header className="flex items-center justify-between py-6">
         <Link
           href="/"
@@ -104,11 +115,8 @@ export default function QuizPage() {
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full transition-all duration-300 ease-out"
-            style={{
-              width: `${progress}%`,
-              backgroundColor: profile.color,
-            }}
+            className="h-full rounded-full bg-white transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
@@ -118,20 +126,20 @@ export default function QuizPage() {
         <div key={current} className="q-enter w-full">
           <QuestionCard
             question={question}
-            value={answers[current]}
+            value={answers[order[current]]}
             onChange={handleSelect}
           />
         </div>
       </div>
 
       {/* Nav */}
-      <footer className="flex items-center justify-between pb-10">
+      <footer className="flex items-center justify-between gap-3 pb-10">
         <button
           type="button"
           onClick={goBack}
           disabled={current === 0}
           className={[
-            "rounded-full border border-white/15 px-5 py-2.5 text-sm text-white/70 transition-colors",
+            "shrink-0 rounded-full border border-white/15 px-5 py-2.5 text-sm text-white/70 transition-colors",
             current === 0
               ? "cursor-not-allowed opacity-30"
               : "hover:border-white/40 hover:text-white",
@@ -139,7 +147,9 @@ export default function QuizPage() {
         >
           ← Back
         </button>
-        <p className="text-xs text-white/30">No timer. Take your time.</p>
+        <p className="hidden text-xs text-white/30 sm:block">
+          No timer. Take your time.
+        </p>
         <button
           type="button"
           onClick={() => {
@@ -150,7 +160,7 @@ export default function QuizPage() {
               router.push("/results");
             }
           }}
-          className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          className="shrink-0 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           {current < ANSWER_COUNT - 1 ? "Skip →" : "See results →"}
         </button>
