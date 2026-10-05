@@ -65,10 +65,14 @@ interface ComboMatch {
 
 /**
  * Match the user's profile against the combination list.
- * A combination matches when every letter in it is present (not Missing).
- * "Dominant fit" = every letter is a natural strength; "Present fit" = all
- * present but not all dominant. Dominant fits are listed first, then longer
- * combos, and combos fully contained in an already-shown combo are skipped.
+ * A combination needs every letter present (not Missing) to qualify.
+ * Longer combos make stronger claims ("Complete Manager" = strong in all
+ * four), so 3+ letter combos only appear when every letter is dominant;
+ * otherwise the 2-letter patterns carry the read.
+ * "Dominant fit" = every letter is a natural strength; "Present fit" =
+ * all present but not all dominant. Most dominant letters first, then
+ * shorter/more specific combos, and combos fully contained in an
+ * already-shown combo are skipped.
  */
 export function matchCombinations(results: DimensionResult[]): ComboMatch[] {
   const byLetter = new Map(results.map((r) => [r.letter, r]));
@@ -84,10 +88,15 @@ export function matchCombinations(results: DimensionResult[]): ComboMatch[] {
     const strengths = letters.map(strength);
     if (strengths.some((s) => s === 0)) return null;
     const dominantCount = strengths.filter((s) => s === 2).length;
+    const totalStrength = strengths.reduce((sum, s) => sum + s, 0);
+    // A 3+ letter combo claims integrated strength across those dimensions —
+    // only show it when every letter is actually dominant.
+    if (letters.length >= 3 && dominantCount !== letters.length) return null;
     return {
       combo,
       dominantCount,
       totalCount: letters.length,
+      totalStrength,
       fit: dominantCount === letters.length
         ? ("Dominant fit" as const)
         : ("Present fit" as const),
@@ -96,9 +105,9 @@ export function matchCombinations(results: DimensionResult[]): ComboMatch[] {
 
   candidates.sort(
     (a, b) =>
-      (a.fit === b.fit ? 0 : a.fit === "Dominant fit" ? -1 : 1) ||
       b.dominantCount - a.dominantCount ||
-      b.totalCount - a.totalCount
+      a.totalCount - b.totalCount ||
+      b.totalStrength - a.totalStrength
   );
 
   const picked: ComboMatch[] = [];

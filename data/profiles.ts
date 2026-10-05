@@ -212,7 +212,7 @@ export const COMBINATIONS: Combination[] = [
     letters: "PAEI",
     name: "Complete Manager",
     description:
-      "All four present. Very rare. Good at everything but master of nothing.",
+      "Strong in all four. Very rare — good at everything but master of nothing.",
   },
 ];
 
