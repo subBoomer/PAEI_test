@@ -95,6 +95,7 @@ export default function RatePage() {
   const [rated, setRated] = useState<RatedPerson[]>([]);
   const [presentFor, setPresentFor] = useState<string | null>(null);
   const [copiedFor, setCopiedFor] = useState<string | null>(null);
+  const [confirmNew, setConfirmNew] = useState(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const beginPerson = useCallback((name: string) => {
@@ -289,14 +290,8 @@ export default function RatePage() {
     [displayFor]
   );
 
-  const handleStartOver = useCallback(() => {
-    if (
-      !window.confirm(
-        "Start a new test? This clears the people you rated in this session."
-      )
-    ) {
-      return;
-    }
+  // The actual reset — called from the in-app confirm modal.
+  const performStartOver = useCallback(() => {
     clearRateSession();
     setRaterName("");
     setOwnCode("");
@@ -306,6 +301,7 @@ export default function RatePage() {
     setCurrentName(null);
     setShowingName(null);
     setPresentFor(null);
+    setConfirmNew(false);
     setStep("entry");
     const completed = loadCompleted();
     if (completed) {
@@ -315,6 +311,16 @@ export default function RatePage() {
       setOwnSource("manual");
     }
   }, []);
+
+  // Escape closes the confirm modal.
+  useEffect(() => {
+    if (!confirmNew) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setConfirmNew(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirmNew]);
 
   if (!ready) {
     return (
@@ -344,7 +350,7 @@ export default function RatePage() {
           {(raterName || people.length > 0 || rated.length > 0 || currentName) && (
             <button
               type="button"
-              onClick={handleStartOver}
+              onClick={() => setConfirmNew(true)}
               className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white/60 transition-colors hover:border-white/40 hover:text-white"
             >
               New test
@@ -735,7 +741,7 @@ export default function RatePage() {
             </button>
             <button
               type="button"
-              onClick={handleStartOver}
+              onClick={() => setConfirmNew(true)}
               className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/50 transition-colors hover:text-white"
             >
               New test
@@ -809,6 +815,46 @@ export default function RatePage() {
             </div>
           );
         })()}
+
+      {/* ==================================================== NEW TEST MODAL */}
+      {confirmNew && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+          onClick={() => setConfirmNew(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Start a new test"
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111113] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-display text-lg font-semibold text-white">
+              Start a new test?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/55">
+              This clears the people you rated in this session. Your own code
+              stays loaded from your test.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmNew(false)}
+                className="rounded-full border border-white/15 px-5 py-2.5 text-sm text-white/70 transition-colors hover:border-white/40 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={performStartOver}
+                className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
+              >
+                New test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="border-t border-white/10 py-8">
         <p className="text-xs text-white/45">
