@@ -34,7 +34,7 @@ export default function DimensionCard({
           <p className="font-display text-2xl font-bold text-white">
             {result.average.toFixed(1)}
           </p>
-          <p className="text-[10px] text-white/30">out of 5.0</p>
+          <p className="text-[10px] text-white/45">out of 5.0</p>
         </div>
       </div>
 

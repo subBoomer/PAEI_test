@@ -355,7 +355,7 @@ export default function RatePage() {
               value={raterName}
               onChange={(e) => setRaterName(e.target.value)}
               placeholder="e.g. Timurs"
-              className="mt-3 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/25 focus:border-white/40 focus:outline-none"
+              className="mt-3 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
             />
           </label>
 
@@ -389,9 +389,9 @@ export default function RatePage() {
                   }}
                   placeholder="PAei"
                   maxLength={4}
-                  className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-display text-xl tracking-widest text-white placeholder:font-sans placeholder:text-base placeholder:tracking-normal placeholder:text-white/25 focus:border-white/40 focus:outline-none"
+                  className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-display text-xl tracking-widest text-white placeholder:font-sans placeholder:text-base placeholder:tracking-normal placeholder:text-white/40 focus:border-white/40 focus:outline-none"
                 />
-                <p className="mt-2 text-xs text-white/35">
+                <p className="mt-2 text-xs text-white/45">
                   Four letters in order P A E I — capital = dominant, small =
                   secondary. Loaded from your test when available.
                 </p>
@@ -436,7 +436,7 @@ export default function RatePage() {
                 if (e.key === "Enter") handleAddPerson();
               }}
               placeholder="Name"
-              className="flex-1 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/25 focus:border-white/40 focus:outline-none"
+              className="flex-1 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
             />
             <button
               type="button"
@@ -546,7 +546,7 @@ export default function RatePage() {
             >
               ← Back
             </button>
-            <p className="hidden text-xs text-white/30 sm:block">
+            <p className="hidden text-xs text-white/45 sm:block">
               Answer for the person you know, not an ideal.
             </p>
             <div className="w-20" />
@@ -566,7 +566,7 @@ export default function RatePage() {
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40">
                 How you see them
               </p>
-              <p className="mt-1 text-xs text-white/30">
+              <p className="mt-1 text-xs text-white/45">
                 Perception, not truth — this is data about the relationship, not
                 a verdict on {showingName}.
               </p>
@@ -657,7 +657,7 @@ export default function RatePage() {
             The people you rated are in this room. Present out loud — hearing
             how you are seen is the point.
           </p>
-          <p className="mt-2 text-xs text-white/35">
+          <p className="mt-2 text-xs text-white/45">
             Rating as {ownCode} · perception, not truth
           </p>
 

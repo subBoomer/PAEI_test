@@ -62,7 +62,7 @@ export default function ResultCard({
         </p>
       )}
 
-      <p className="mt-4 max-w-md text-xs text-white/30">
+      <p className="mt-4 max-w-md text-xs text-white/50">
         {code === code.toLowerCase()
           ? "No dominant dimension — your strengths are spread evenly."
           : "Capital letters are natural strengths. Small letters are present but not natural."}

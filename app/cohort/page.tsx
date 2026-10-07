@@ -103,7 +103,7 @@ export default function CohortPage() {
           onChange={(e) => setRaw(e.target.value)}
           rows={8}
           placeholder={"https://…/results#paei=43521435214352143521\nhttps://…/results#paei=54321543215432154321\n…"}
-          className="mt-3 w-full resize-y rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-mono text-sm text-white placeholder:text-white/25 focus:border-white/40 focus:outline-none"
+          className="mt-3 w-full resize-y rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-mono text-sm text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
         />
       </section>
 
@@ -193,7 +193,7 @@ export default function CohortPage() {
                           secondary
                         </p>
                         <p>
-                          <span className="text-white/35">{s.missing}</span>{" "}
+                          <span className="text-white/50">{s.missing}</span>{" "}
                           missing
                         </p>
                       </div>

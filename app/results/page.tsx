@@ -42,6 +42,11 @@ function mergeWorkEntries(entries: string[]): string[] {
 type ShareState = "idle" | "working" | "copied" | "shared" | "error";
 
 /** Draw a shareable result image on a canvas. No external dependencies. */
+/**
+ * Share image drawn to match the page: same fonts (read from the loaded
+ * next/font CSS variables), same letter treatment as ResultCard, same row
+ * layout as DimensionCard.
+ */
 function drawShareImage(
   code: string,
   rows: { letter: string; name: string; score: string; rank: string; color: string }[]
@@ -54,73 +59,148 @@ function drawShareImage(
   const ctx = canvas.getContext("2d");
   if (!ctx) return Promise.reject(new Error("Canvas not supported"));
 
+  // Use the same fonts the page renders with.
+  const root = getComputedStyle(document.documentElement);
+  const displayFamily =
+    root.getPropertyValue("--font-space-grotesk").trim() ||
+    "'Space Grotesk', system-ui, sans-serif";
+  const bodyFamily =
+    root.getPropertyValue("--font-inter").trim() ||
+    "'Inter', system-ui, sans-serif";
+  const display = (weight: number, size: number) =>
+    `${weight} ${size}px ${displayFamily}`;
+  const body = (weight: number, size: number) =>
+    `${weight} ${size}px ${bodyFamily}`;
+
+  const M = 90; // page-like side margin
+
   // Background
   ctx.fillStyle = "#0a0a0b";
   ctx.fillRect(0, 0, W, H);
 
-  // Title
+  // Top label — same tracking style as the page's small caps labels
   ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.font = "600 32px system-ui, sans-serif";
+  ctx.font = body(600, 28);
   ctx.textAlign = "center";
+  if ("letterSpacing" in ctx) {
+    (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+      "8px";
+  }
   ctx.fillText("MY PAEI MANAGEMENT STYLE", W / 2, 130);
+  if ("letterSpacing" in ctx) {
+    (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
+      "0px";
+  }
 
-  // Big code — draw each letter in its dimension color
+  // Big code — ResultCard rules: capital full size/opacity, lowercase smaller
+  // and dimmer, missing dimmest.
   const letters = code.split("");
-  const sizes = letters.map((ch) => (ch === ch.toUpperCase() ? 260 : 190));
+  const rankOf = (ch: string) =>
+    rows.find((r) => r.letter.toLowerCase() === ch.toLowerCase())?.rank ?? "";
+  const sizeOf = (ch: string) => {
+    const rank = rankOf(ch);
+    if (rank === "Missing") return 170;
+    return ch === ch.toUpperCase() ? 250 : 185;
+  };
+  const alphaOf = (ch: string) => {
+    const rank = rankOf(ch);
+    if (rank === "Missing") return 0.25;
+    return ch === ch.toLowerCase() ? 0.55 : 1;
+  };
+  const sizes = letters.map(sizeOf);
   const widths = letters.map((_, i) => {
-    ctx.font = `700 ${sizes[i]}px system-ui, sans-serif`;
+    ctx.font = display(700, sizes[i]);
     return ctx.measureText(letters[i]).width;
   });
-  const gap = 24;
+  const gap = 26;
   const totalW = widths.reduce((a, b) => a + b, 0) + gap * (letters.length - 1);
   let x = (W - totalW) / 2;
-  const baseline = 520;
+  const baseline = 480;
+  ctx.textAlign = "left";
   letters.forEach((ch, i) => {
     const dim = Object.values(PROFILES).find(
       (p) => p.letter.toLowerCase() === ch.toLowerCase()
     );
-    ctx.font = `700 ${sizes[i]}px system-ui, sans-serif`;
-    ctx.textAlign = "left";
+    ctx.font = display(700, sizes[i]);
     ctx.fillStyle = dim ? dim.color : "#ffffff";
-    ctx.globalAlpha = ch === ch.toLowerCase() ? 0.5 : 1;
+    ctx.globalAlpha = alphaOf(ch);
     ctx.fillText(ch, x, baseline);
     ctx.globalAlpha = 1;
     x += widths[i] + gap;
   });
 
-  // Dimension rows
-  let y = 700;
+  // Chip row under the code — same pills as ResultCard
+  ctx.font = body(500, 26);
+  const chips = rows.map((r) => `${r.name} ${r.score}`);
+  const chipWs = chips.map((c) => ctx.measureText(c).width + 44);
+  const chipGap = 14;
+  const chipsW = chipWs.reduce((a, b) => a + b, 0) + chipGap * (chips.length - 1);
+  let cx = (W - chipsW) / 2;
+  const chipY = 545;
+  chips.forEach((label, i) => {
+    const r = rows[i];
+    ctx.fillStyle = `${r.color}26`;
+    ctx.beginPath();
+    ctx.roundRect(cx, chipY, chipWs[i], 52, 26);
+    ctx.fill();
+    ctx.fillStyle = r.color;
+    ctx.font = body(500, 26);
+    ctx.textAlign = "center";
+    ctx.fillText(label, cx + chipWs[i] / 2, chipY + 34);
+    cx += chipWs[i] + chipGap;
+  });
+
+  // Divider
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(M, 665);
+  ctx.lineTo(W - M, 665);
+  ctx.stroke();
+
+  // Dimension rows — DimensionCard layout: letter chip, name, score, rank
+  let y = 745;
+  const rowStep = 128;
   ctx.textAlign = "left";
   for (const row of rows) {
-    // Letter chip
-    ctx.fillStyle = `${row.color}33`;
+    // Letter chip (rounded square, same as page cards)
+    ctx.fillStyle = `${row.color}26`;
     ctx.beginPath();
-    ctx.roundRect(90, y - 55, 80, 80, 18);
+    ctx.roundRect(M, y - 46, 84, 84, 20);
     ctx.fill();
     ctx.fillStyle = row.color;
-    ctx.font = "700 44px system-ui, sans-serif";
-    ctx.fillText(row.letter, 118, y);
+    ctx.font = display(700, 40);
+    ctx.fillText(row.letter, M + 26, y + 10);
 
     // Name
     ctx.fillStyle = "#ffffff";
-    ctx.font = "600 36px system-ui, sans-serif";
-    ctx.fillText(row.name, 210, y - 8);
+    ctx.font = display(600, 34);
+    ctx.fillText(row.name, M + 116, y - 2);
 
-    // Rank + score
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
-    ctx.font = "400 28px system-ui, sans-serif";
+    // Rank under name
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = body(400, 24);
+    ctx.fillText(row.rank, M + 116, y + 32);
+
+    // Score, right-aligned
+    ctx.fillStyle = "#ffffff";
+    ctx.font = display(700, 40);
     ctx.textAlign = "right";
-    ctx.fillText(`${row.rank} · ${row.score}`, W - 90, y - 8);
+    ctx.fillText(row.score, W - M, y + 10);
     ctx.textAlign = "left";
 
-    y += 140;
+    y += rowStep;
   }
 
   // Footer
   ctx.fillStyle = "rgba(255,255,255,0.3)";
-  ctx.font = "400 28px system-ui, sans-serif";
+  ctx.font = body(400, 26);
   ctx.textAlign = "center";
-  ctx.fillText("Take the PAEI Test — 20 questions, one four-letter code", W / 2, H - 80);
+  ctx.fillText(
+    "PAEI Test · Future Leaders — Leadership I",
+    W / 2,
+    H - 70
+  );
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -137,6 +217,7 @@ export default function ResultsPage() {
   const [shareState, setShareState] = useState<ShareState>("idle");
   const [copiedText, setCopiedText] = useState(false);
   const [copiedReflect, setCopiedReflect] = useState(false);
+  const [copiedCoach, setCopiedCoach] = useState(false);
   const [copiedWork, setCopiedWork] = useState(false);
   const shareUrlRef = useRef("");
 
@@ -327,7 +408,13 @@ export default function ResultsPage() {
     const lines: string[] = [
       `Reflection — my ${p.name} (${weakest.letter}) is ${weakest.average.toFixed(1)} (${weakest.rank})`,
       "",
+      `Why this score: ${p.why}`,
+      "",
+      "Reflection questions:",
       ...p.reflection.map((q, i) => `${i + 1}. ${q}`),
+      "",
+      "Practices I want to try:",
+      ...p.improve.map((s, i) => `${i + 1}. ${s}`),
       "",
       "My notes:",
       "",
@@ -342,6 +429,43 @@ export default function ResultsPage() {
       window.prompt("Copy your reflection prompts:", lines.join("\n"));
     }
     setTimeout(() => setCopiedReflect(false), 2500);
+  }, [result, weakest]);
+
+  // Full-context coaching prompt — paste into ChatGPT/Claude and it can
+  // discuss, ask follow-ups, and help write the report entry.
+  const handleCopyCoach = useCallback(async () => {
+    if (!result || !weakest) return;
+    const p = PROFILES[weakest.letter];
+    const lines: string[] = [
+      "Coaching prompt — my PAEI growth edge",
+      "",
+      "Context: I am a student in Future Leaders — Leadership I. I took the PAEI assessment (management roles: Producer, Administrator, Entrepreneur, Integrator).",
+      "",
+      `My code: ${result.code}`,
+      ...result.results.map((r) => {
+        const dp = PROFILES[r.letter];
+        return `${dp.letter} — ${dp.name}: ${r.average.toFixed(1)} (${r.rank})`;
+      }),
+      "",
+      `My lowest dimension: ${p.name} (${weakest.average.toFixed(1)} — ${weakest.rank}).`,
+      `Why this score: ${p.why}`,
+      "",
+      "Questions to reflect on:",
+      ...p.reflection.map((q, i) => `${i + 1}. ${q}`),
+      "",
+      "Practices I am considering:",
+      ...p.improve.map((s, i) => `${i + 1}. ${s}`),
+      "",
+      "Please coach me on this dimension: ask me one question at a time to help me understand my score, reflect honestly, and choose one practice to commit to this week. After we have discussed, help me write 3-4 sentences I can paste into my weekly report.",
+    ];
+    const text = lines.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedCoach(true);
+    } catch {
+      window.prompt("Copy the coaching prompt:", text);
+    }
+    setTimeout(() => setCopiedCoach(false), 2500);
   }, [result, weakest]);
 
   const handleCopyWork = useCallback(async () => {
@@ -455,6 +579,13 @@ export default function ResultsPage() {
         >
           {copiedText ? "Copied ✓" : "Copy results"}
         </button>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+        >
+          Download PDF
+        </button>
         <Link
           href="/quiz"
           onClick={() => clearAnswers()}
@@ -478,12 +609,49 @@ export default function ResultsPage() {
           <h2 className="font-display text-xl font-semibold text-white">
             Reflect on your growth edge
           </h2>
-          <p className="mt-2 text-sm text-white/45">
+          <p className="mt-2 text-sm text-white/50">
             {PROFILES[weakest.letter].name} is your lowest dimension (
-            {weakest.average.toFixed(1)} — {weakest.rank}). Three questions for
-            your weekly report or journal.
+            {weakest.average.toFixed(1)} — {weakest.rank}). Understand why —
+            then pick one thing to practice.
           </p>
-          <ol className="mt-6 space-y-4">
+
+          {/* Why this score */}
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white/45">
+              Why this score
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-white/70">
+              {PROFILES[weakest.letter].why}
+            </p>
+          </div>
+
+          {/* How to improve */}
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white/45">
+              How to improve
+            </h3>
+            <ul className="mt-3 space-y-2.5">
+              {PROFILES[weakest.letter].improve.map((s, i) => (
+                <li key={i} className="flex gap-3">
+                  <span
+                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-display text-xs font-bold"
+                    style={{
+                      backgroundColor: `${PROFILES[weakest.letter].color}26`,
+                      color: PROFILES[weakest.letter].color,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="text-sm leading-relaxed text-white/70">
+                    {s}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Reflection questions */}
+          <ol className="mt-4 space-y-4">
             {PROFILES[weakest.letter].reflection.map((q, i) => (
               <li
                 key={i}
@@ -498,17 +666,32 @@ export default function ResultsPage() {
                 >
                   {i + 1}
                 </span>
-                <p className="text-sm leading-relaxed text-white/65">{q}</p>
+                <p className="text-sm leading-relaxed text-white/70">{q}</p>
               </li>
             ))}
           </ol>
-          <button
-            type="button"
-            onClick={handleCopyReflection}
-            className="mt-6 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
-          >
-            {copiedReflect ? "Copied ✓" : "Copy prompts for my report"}
-          </button>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleCopyCoach}
+              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            >
+              {copiedCoach ? "Copied ✓" : "Copy coaching prompt"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyReflection}
+              className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+            >
+              {copiedReflect ? "Copied ✓" : "Copy for my report"}
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-white/40">
+            Coaching prompt includes your full score context — paste it into
+            ChatGPT or Claude to discuss this dimension, or answer the
+            questions yourself first.
+          </p>
         </section>
       )}
 
@@ -750,7 +933,7 @@ export default function ResultsPage() {
                     >
                       {pa.letter}
                     </span>
-                    <span className="text-xs text-white/30">vs</span>
+                    <span className="text-xs text-white/45">vs</span>
                     <span
                       className="rounded-lg px-2 py-0.5 font-display text-sm font-bold"
                       style={{

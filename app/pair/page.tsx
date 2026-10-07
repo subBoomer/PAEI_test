@@ -138,7 +138,7 @@ export default function PairPage() {
               value={f.value}
               onChange={(e) => f.set(e.target.value)}
               placeholder={f.ph}
-              className="mt-3 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-white/40 focus:outline-none"
+              className="mt-3 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
             />
           </div>
         ))}
@@ -282,7 +282,7 @@ export default function PairPage() {
                         >
                           {pa.letter}
                         </span>
-                        <span className="text-xs text-white/30">vs</span>
+                        <span className="text-xs text-white/45">vs</span>
                         <span
                           className="rounded-lg px-2 py-0.5 font-display text-sm font-bold"
                           style={{

@@ -62,3 +62,33 @@ a {
     animation: none;
   }
 }
+
+/* PDF download via the browser's print-to-PDF. Keeps the dark page look:
+ * background graphics are forced on, chrome (nav/buttons/footers) is hidden.
+ */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  html,
+  body {
+    background: #0a0a0b !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  main {
+    min-height: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  header,
+  footer,
+  button,
+  a[href] {
+    display: none !important;
+  }
+  section {
+    break-inside: avoid;
+    border-top-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}

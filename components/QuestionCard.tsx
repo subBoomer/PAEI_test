@@ -24,7 +24,7 @@ export default function QuestionCard({
         <ScaleSelector value={value} onChange={onChange} />
       </div>
 
-      <p className="mt-4 text-center text-xs text-white/30">
+      <p className="mt-4 text-center text-xs text-white/50">
         1 = never · 5 = always
       </p>
     </div>

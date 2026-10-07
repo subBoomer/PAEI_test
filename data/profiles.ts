@@ -8,6 +8,10 @@ export interface DimensionProfile {
   essence: string;
   /** Third-person line: what a strong letter of this kind covers for someone who skips it. */
   covers: string;
+  /** What a LOW score on this dimension actually means — the "why this score" text. */
+  why: string;
+  /** Three concrete practices for raising this dimension. */
+  improve: string[];
   strengths: string[];
   weaknesses: string[];
   roles: string[];
@@ -25,6 +29,12 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Producer is the part of you that turns effort into results. When this dimension is strong, you feel an itch to start, to finish, and to show what got done.",
     essence: "turns effort into results",
     covers: "they push through obstacles until it is done",
+    why: "A low Producer score usually means you do not feel the itch to start before everything is clear, and finishing alone is not your default. That is not laziness — your energy goes into other dimensions. The risk is tasks that stall because nobody is pushing them over the line.",
+    improve: [
+      "Pick one task per week and finish it fully before starting another — notice the urge to switch early.",
+      "When you avoid a task, name the single next physical step and do just that step.",
+      "Ask someone for a deadline on one thing you would normally leave open-ended.",
+    ],
     strengths: [
       "Gets results",
       "Hardworking and fast",
@@ -62,6 +72,12 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Administrator is the part of you that builds order. You want to know the scope, the roles, and the timeline before things move.",
     essence: "builds order",
     covers: "they build the order before things move",
+    why: "A low Administrator score usually means scope, roles, and timelines are not what you reach for first. You would rather move than plan. The risk is rework — things get done twice because they were never framed once.",
+    improve: [
+      "Before your next group task, spend ten minutes writing the goal, who does what, and by when — then share it.",
+      "When something goes wrong, ask 'what process was missing?' before asking who to blame.",
+      "Keep one running checklist for a recurring task and update it every time you do the task.",
+    ],
     strengths: [
       "Organized and systematic",
       "Detail-oriented",
@@ -99,6 +115,12 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Entrepreneur is the part of you that looks ahead. You get energy from new ideas, new opportunities, and challenging how things are done today.",
     essence: "looks ahead",
     covers: "they place the bets on new ideas",
+    why: "A low Entrepreneur score usually means new ideas do not pull you by default, and the status quo rarely bothers you. The risk is drift — a year passes and nothing has changed because nothing forced a choice.",
+    improve: [
+      "Write down three ideas you had this month. Pick one and take one concrete step this week.",
+      "When something annoys you, ask 'what would the better version of this look like?'",
+      "Set a recurring weekly slot to read or listen outside your current subjects.",
+    ],
     strengths: [
       "Visionary and innovative",
       "Spots opportunities early",
@@ -136,6 +158,12 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Integrator is the part of you that holds people together. You read the room, care about relationships, and want the group to work as one.",
     essence: "holds people together",
     covers: "they read the room and hold people together",
+    why: "A low Integrator score usually means you do not naturally scan the room for mood and tension. You can still care deeply — you just show it through work rather than words. The risk is that people do not know where they stand with you.",
+    improve: [
+      "Before your next meeting, ask one person how they are actually doing — and listen without solving.",
+      "When you notice tension, say one honest thing about it instead of waiting for someone else to.",
+      "In your next group decision, ask 'who does this affect who is not in the room?'",
+    ],
     strengths: [
       "Builds trust",
       "Resolves conflict",

@@ -116,10 +116,10 @@ export default function QuizPage() {
         <div className="flex items-baseline justify-between">
           <p className="text-sm font-medium text-white/70">
             Question {current + 1}{" "}
-            <span className="text-white/35">of {ANSWER_COUNT}</span>
+            <span className="text-white/50">of {ANSWER_COUNT}</span>
           </p>
           {answeredCount > 0 && (
-            <p className="text-xs text-white/35">{answeredCount} answered</p>
+            <p className="text-xs text-white/50">{answeredCount} answered</p>
           )}
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -156,7 +156,7 @@ export default function QuizPage() {
         >
           ← Back
         </button>
-        <p className="hidden text-xs text-white/30 sm:block">
+        <p className="hidden text-xs text-white/45 sm:block">
           No timer. Take your time.
         </p>
         <button

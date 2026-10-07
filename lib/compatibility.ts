@@ -17,6 +17,22 @@ function nameList(letters: Dimension[]): string {
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
+/** "they place the bets on new ideas" / "they X and Y" / "they X, Y, and Z" */
+function coversList(letters: Dimension[]): string {
+  const parts = letters.map((l) => PROFILES[l].covers.replace(/^they /, ""));
+  if (parts.length === 1) return `they ${parts[0]}`;
+  if (parts.length === 2) return `they ${parts[0]} and ${parts[1]}`;
+  return `they ${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+}
+
+/** "turns effort into results" / "X and Y" / "X, Y, and Z" */
+function essenceList(letters: Dimension[]): string {
+  const parts = letters.map((l) => PROFILES[l].essence);
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
+  return `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`;
+}
+
 export function topLetter(results: DimensionResult[]): Dimension {
   return [...results].sort((a, b) => b.average - a.average)[0].letter;
 }
@@ -28,7 +44,9 @@ export function codeMeaning(results: DimensionResult[]): string {
     const key = DIMENSION_ORDER.filter((l) => doms.includes(l)).join("");
     const combo = COMBINATIONS.find((c) => c.letters === key);
     if (combo) return `${combo.name} — ${combo.description}`;
-    return `${PROFILES[top.letter].name}: ${PROFILES[top.letter].meaning}`;
+    // No combination for this shape (e.g. a single dominant letter) —
+    // one clean sentence instead of the full profile text.
+    return firstSentence(PROFILES[top.letter].meaning);
   }
   return `No dominant dimension — ${PROFILES[top.letter].name} leans highest at ${top.average.toFixed(1)}.`;
 }
@@ -157,16 +175,14 @@ export function computeCompatibility(
     if (theyCoverMe.length > 0) {
       const verb = theyCoverMe.length === 1 ? "covers" : "cover";
       parts.push(
-        `Their ${nameList(theyCoverMe)} ${verb} what you skip — ${theyCoverMe
-          .map((l) => PROFILES[l].covers)
-          .join(", and ")}.`
+        `Their ${nameList(theyCoverMe)} ${verb} what you skip — ${coversList(
+          theyCoverMe
+        )}.`
       );
     }
     if (iCoverThem.length > 0) {
       parts.push(
-        `You cover their ${nameList(iCoverThem)} — ${iCoverThem
-          .map((l) => PROFILES[l].essence)
-          .join(", and ")}.`
+        `You cover their ${nameList(iCoverThem)} — ${essenceList(iCoverThem)}.`
       );
     }
     reasons.push(parts.join(" "));

@@ -180,7 +180,7 @@ export default function Home() {
           Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders —
           Leadership I.
         </p>
-        <p className="mt-1 text-sm text-white/30">
+        <p className="mt-1 text-sm text-white/45">
           Results stay in your browser. Nothing is stored or sent anywhere.
         </p>
       </footer>
