@@ -81,13 +81,13 @@ export function pairInsights(mA: PairMember, mB: PairMember): PairInsight {
       complements.push({
         letter,
         strong: "A",
-        note: `${name} is a natural strength for A but missing for B — this role will fall on A unless it is consciously shared.`,
+        note: `${name} is a natural strength for A but missing for B: this role will fall on A unless it is consciously shared.`,
       });
     } else if (rb.capital && ra.rank === "Missing") {
       complements.push({
         letter,
         strong: "B",
-        note: `${name} is a natural strength for B but missing for A — this role will fall on B unless it is consciously shared.`,
+        note: `${name} is a natural strength for B but missing for A: this role will fall on B unless it is consciously shared.`,
       });
     } else if (ra.capital && !rb.capital) {
       complements.push({
@@ -129,7 +129,7 @@ export function pairInsights(mA: PairMember, mB: PairMember): PairInsight {
         a: lead,
         b: follow,
         title,
-        note: `A leans ${PROFILES[lead].name} while B leans ${PROFILES[follow].name}. Expect friction on this axis — name it early and decide who decides.`,
+        note: `A leans ${PROFILES[lead].name} while B leans ${PROFILES[follow].name}. Expect friction on this axis: name it early and decide who decides.`,
       });
     }
   }
@@ -151,11 +151,11 @@ export function pairInsights(mA: PairMember, mB: PairMember): PairInsight {
     parts.push(
       `You cover each other on ${complements
         .map((c) => c.letter)
-        .join(", ")} — the gaps do not overlap, which is exactly what a founding team needs.`
+        .join(", ")}: the gaps do not overlap, which is exactly what a founding team needs.`
     );
   } else {
     parts.push(
-      "Your strengths overlap rather than complement — powerful when aligned, but expect competition for the same seats."
+      "Your strengths overlap rather than complement: powerful when aligned, but expect competition for the same seats."
     );
   }
   if (tensions.length > 0) {
@@ -166,7 +166,7 @@ export function pairInsights(mA: PairMember, mB: PairMember): PairInsight {
     );
   } else {
     parts.push(
-      "No strong crossed tensions between you — your conflicts will come from shared blind spots instead."
+      "No strong crossed tensions between you: your conflicts will come from shared blind spots instead."
     );
   }
 
@@ -223,8 +223,8 @@ export function cohortReport(members: PairMember[]): CohortReport | null {
     `${members.length} people. The cohort's strongest collective muscle is ` +
     `${nameOf(strongest.letter)} (average ${strongest.avg.toFixed(1)}). ` +
     (gaps.length > 0
-      ? `The gap is ${gaps.map(nameOf).join(" and ")} — more than half the group scored it Missing. In team projects, assign these roles deliberately instead of letting them fall to whoever complains last.`
-      : `No dimension is missing for most of the group — a rare and balanced cohort. Watch for shared blind spots instead: things nobody's code covers, because everyone assumes someone else has it.`);
+      ? `The gap is ${gaps.map(nameOf).join(" and ")}: more than half the group scored it Missing. In team projects, assign these roles deliberately instead of letting them fall to whoever complains last.`
+      : `No dimension is missing for most of the group: a rare and balanced cohort. Watch for shared blind spots instead: things nobody's code covers, because everyone assumes someone else has it.`);
 
   return { size: members.length, stats, gaps, summary };
 }

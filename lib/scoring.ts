@@ -192,11 +192,11 @@ export function buildSummary(
       .filter((r) => r.letter !== sole && r.rank !== "Missing")
       .map((r) => PROFILES[r.letter].name);
     body =
-      `You lead through ${topProfile.name} — ${topProfile.meaning.replace(/^The \w+ is the part of you that /, "").replace(/^./, (c) => c.toLowerCase())} ` +
+      `You lead through ${topProfile.name}: ${topProfile.meaning.replace(/^The \w+ is the part of you that /, "").replace(/^./, (c) => c.toLowerCase())} ` +
       (presentOthers.length > 0
         ? `While ${presentOthers.join(" and ")} ${presentOthers.length > 1 ? "are" : "is"} present in your profile, ${topProfile.name} is what people feel first. `
         : "") +
-      `The pure version of this carries a nickname — "${topProfile.nickname}" — but your code shows more than the stereotype. ` +
+      `The pure version of this carries a nickname, "${topProfile.nickname}", but your code shows more than the stereotype. ` +
       `Your growth edge is ${weakestProfile.name}: ${weakestProfile.weaknesses[0].toLowerCase()}. That is where a teammate strong in ${weakestProfile.name} would change everything.`;
   } else if (dominant.length >= 2) {
     const names = dominant.map((r) => PROFILES[r.letter].name);
@@ -207,14 +207,14 @@ export function buildSummary(
     body =
       `Your code is ${code}, and it runs on ${nameList}. ` +
       (topCombo
-        ? `The clearest way to read it: ${topCombo.combo.name} — ${topCombo.combo.description.charAt(0).toLowerCase()}${topCombo.combo.description.slice(1)} `
+        ? `The clearest way to read it: ${topCombo.combo.name} - ${topCombo.combo.description.charAt(0).toLowerCase()}${topCombo.combo.description.slice(1)} `
         : "") +
-      `With ${dominant.length} natural strengths you can shift roles depending on what the moment needs — which is powerful, as long as you decide who leads in a given situation instead of letting the loudest dimension take over. ` +
+      `With ${dominant.length} natural strengths you can shift roles depending on what the moment needs, which is powerful, as long as you decide who leads in a given situation instead of letting the loudest dimension take over. ` +
       `Meanwhile ${weakestProfile.name} sits quiet: ${weakestProfile.meaning.replace(/^The \w+ is the part of you that /, "").replace(/^./, (c) => c.toLowerCase())} ` +
-      `That gap is not a flaw — it is a hiring hint.`;
+      `That gap is not a flaw; it is a hiring hint.`;
   } else {
     body =
-      `Your code is ${code}. No dimension screams dominance — and that is not a failure. It usually means one of two things: you are early in your leadership journey and still exploring, or you spread yourself evenly across roles and never let one voice get loud. ` +
+      `Your code is ${code}. No dimension screams dominance, and that is not a failure. It usually means one of two things: you are early in your leadership journey and still exploring, or you spread yourself evenly across roles and never let one voice get loud. ` +
       `Your relatively strongest lean is ${topProfile.name} (${top.average.toFixed(1)}), with ${weakestProfile.name} at ${weakest.average.toFixed(1)}. ` +
       `The useful move from here is deliberate: pick the dimension your current goal needs most, and practice turning that one up on purpose.`;
   }

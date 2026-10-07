@@ -197,7 +197,7 @@ function drawShareImage(
   ctx.font = body(400, 26);
   ctx.textAlign = "center";
   ctx.fillText(
-    "PAEI Test · Future Leaders — Leadership I",
+    "PAEI Test · Future Leaders - Leadership I",
     W / 2,
     H - 70
   );
@@ -318,7 +318,7 @@ export default function ResultsPage() {
     for (const r of result.results) {
       const p = PROFILES[r.letter];
       lines.push(
-        `${r.capital ? p.letter : p.letter.toLowerCase()} — ${p.name}: ${r.average.toFixed(1)} (${r.rank})`
+        `${r.capital ? p.letter : p.letter.toLowerCase()} - ${p.name}: ${r.average.toFixed(1)} (${r.rank})`
       );
     }
     lines.push("");
@@ -327,7 +327,7 @@ export default function ResultsPage() {
       lines.push("");
       lines.push("Combinations:");
       for (const { combo } of result.combos) {
-        lines.push(`• ${combo.letters} — ${combo.name}: ${combo.description}`);
+        lines.push(`• ${combo.letters} - ${combo.name}: ${combo.description}`);
       }
     }
     if (result.conflicts.length > 0) {
@@ -340,7 +340,7 @@ export default function ResultsPage() {
       }
     }
     lines.push("");
-    lines.push("— Taken with the PAEI Test");
+    lines.push("- Taken with the PAEI Test");
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopiedText(true);
@@ -406,7 +406,7 @@ export default function ResultsPage() {
     if (!result || !weakest) return;
     const p = PROFILES[weakest.letter];
     const lines: string[] = [
-      `Reflection — my ${p.name} (${weakest.letter}) is ${weakest.average.toFixed(1)} (${weakest.rank})`,
+      `Reflection - my ${p.name} (${weakest.letter}) is ${weakest.average.toFixed(1)} (${weakest.rank})`,
       "",
       `Why this score: ${p.why}`,
       "",
@@ -420,7 +420,7 @@ export default function ResultsPage() {
       "",
       "",
       "",
-      "— Weekly report, Future Leaders — Leadership I",
+      "- Weekly report, Future Leaders - Leadership I",
     ];
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
@@ -437,17 +437,17 @@ export default function ResultsPage() {
     if (!result || !weakest) return;
     const p = PROFILES[weakest.letter];
     const lines: string[] = [
-      "Coaching prompt — my PAEI growth edge",
+      "Coaching prompt - my PAEI growth edge",
       "",
-      "Context: I am a student in Future Leaders — Leadership I. I took the PAEI assessment (management roles: Producer, Administrator, Entrepreneur, Integrator).",
+      "Context: I am a student in Future Leaders - Leadership I. I took the PAEI assessment (management roles: Producer, Administrator, Entrepreneur, Integrator).",
       "",
       `My code: ${result.code}`,
       ...result.results.map((r) => {
         const dp = PROFILES[r.letter];
-        return `${dp.letter} — ${dp.name}: ${r.average.toFixed(1)} (${r.rank})`;
+        return `${dp.letter} - ${dp.name}: ${r.average.toFixed(1)} (${r.rank})`;
       }),
       "",
-      `My lowest dimension: ${p.name} (${weakest.average.toFixed(1)} — ${weakest.rank}).`,
+      `My lowest dimension: ${p.name} (${weakest.average.toFixed(1)} - ${weakest.rank}).`,
       `Why this score: ${p.why}`,
       "",
       "Questions to reflect on:",
@@ -611,7 +611,7 @@ export default function ResultsPage() {
           </h2>
           <p className="mt-2 text-sm text-white/50">
             {PROFILES[weakest.letter].name} is your lowest dimension (
-            {weakest.average.toFixed(1)} — {weakest.rank}). Understand why —
+            {weakest.average.toFixed(1)} - {weakest.rank}). Understand why,
             then pick one thing to practice.
           </p>
 
@@ -688,7 +688,7 @@ export default function ResultsPage() {
             </button>
           </div>
           <p className="mt-3 text-xs text-white/40">
-            Coaching prompt includes your full score context — paste it into
+            Coaching prompt includes your full score context: paste it into
             ChatGPT or Claude to discuss this dimension, or answer the
             questions yourself first.
           </p>
@@ -749,12 +749,12 @@ export default function ResultsPage() {
             Who I work best with
           </h2>
           <p className="mt-2 text-sm text-white/45">
-            The people who complete your profile — and the one who collides
+            The people who complete your profile, and the one who collides
             with it.
           </p>
           {!hasDominant && (
             <p className="mt-3 text-sm leading-relaxed text-white/40">
-              No dominant dimension means no default seat — you are still
+              No dominant dimension means no default seat: you are still
               deciding where you fit. That is an advantage in a startup: you
               can plug into whichever role the team is missing. Try leaning
               into one dimension for a semester and see which seat feels like
@@ -803,7 +803,7 @@ export default function ResultsPage() {
           Where you fit in a startup
         </h2>
         <p className="mt-2 text-sm text-white/45">
-          Roles your natural strengths point toward — drawn from your dominant
+          Roles your natural strengths point toward, drawn from your dominant
           dimensions.
         </p>
         <div className="mt-6 space-y-4">
@@ -848,7 +848,7 @@ export default function ResultsPage() {
           {result.results.every((r) => !r.capital) && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
               <p className="text-sm leading-relaxed text-white/60">
-                No dominant dimension means no default seat — you are still
+                No dominant dimension means no default seat: you are still
                 deciding where you fit. That is an advantage in a startup: you
                 can plug into whichever role the team is missing. Try leaning
                 into one dimension for a semester and see which seat feels like
@@ -867,10 +867,10 @@ export default function ResultsPage() {
           </h2>
           <p className="mt-2 text-sm text-white/45">
             {hasDominant
-              ? `Generated from your dominant dimensions — ${dominantLetters
+              ? `Generated from your dominant dimensions: ${dominantLetters
                   .map((l) => PROFILES[l].name)
                   .join(", ")}.`
-              : `No dominant dimension — generated from your closest lean, ${
+              : `No dominant dimension: generated from your closest lean, ${
                   PROFILES[dominantLetters[0]].name
                 } (${strongest!.average.toFixed(1)}).`}{" "}
             Share this with teammates so they know what works on you.
@@ -962,11 +962,11 @@ export default function ResultsPage() {
 
       <footer className="border-t border-white/10 py-10">
         <p className="text-sm text-white/40">
-          Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders —
+          Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders -
           Leadership I.
         </p>
         <p className="mt-1 text-xs text-white/30">
-          Results are shown to you only — nothing is stored on a server.
+          Results are shown to you only: nothing is stored on a server.
         </p>
       </footer>
     </main>

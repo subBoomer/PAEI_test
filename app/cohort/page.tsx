@@ -43,18 +43,18 @@ export default function CohortPage() {
   const handleCopy = useCallback(async () => {
     if (!report) return;
     const lines: string[] = [];
-    lines.push(`PAEI cohort snapshot — ${report.size} people`);
+    lines.push(`PAEI cohort snapshot: ${report.size} people`);
     lines.push("");
     for (const s of report.stats) {
       const p = PROFILES[s.letter];
       lines.push(
-        `${p.letter} ${p.name}: avg ${s.avg.toFixed(1)} — ${s.dominant} dominant, ${s.secondary} secondary, ${s.missing} missing`
+        `${p.letter} ${p.name}: avg ${s.avg.toFixed(1)} - ${s.dominant} dominant, ${s.secondary} secondary, ${s.missing} missing`
       );
     }
     lines.push("");
     lines.push(report.summary);
     lines.push("");
-    lines.push("— Cohort view, PAEI Test");
+    lines.push("- Cohort view, PAEI Test");
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopied(true);
@@ -83,8 +83,8 @@ export default function CohortPage() {
           Cohort view
         </h1>
         <p className="mt-3 max-w-xl text-white/55">
-          For teachers and team leads. Paste everyone&apos;s result links — one
-          per line — and see the group snapshot: collective strengths, the
+          For teachers and team leads. Paste everyone&apos;s result links, one
+          per line, and see the group snapshot: collective strengths, the
           dimensions missing from the room, and what to assign deliberately in
           the next project. Nothing is stored.
         </p>
@@ -228,7 +228,7 @@ export default function CohortPage() {
                 Assign these on purpose
               </h2>
               <p className="mt-2 text-sm text-white/45">
-                Dimensions missing from most of the group — in project teams,
+                Dimensions missing from most of the group: in project teams,
                 these roles will not fill themselves.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -256,7 +256,7 @@ export default function CohortPage() {
       <footer className="mt-auto border-t border-white/10 py-10">
         <p className="text-sm text-white/40">
           Paste links collected from &quot;Copy result link&quot; on each
-          person&apos;s results page. Nothing is uploaded — the analysis runs in
+          person&apos;s results page. Nothing is uploaded: the analysis runs in
           your browser.
         </p>
       </footer>

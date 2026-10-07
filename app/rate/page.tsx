@@ -62,11 +62,11 @@ function buildSummaryText(
   report: CompatibilityReport
 ): string {
   return [
-    `I rated ${name} as ${code} — ${report.tier}.`,
+    `I rated ${name} as ${code} - ${report.tier}.`,
     `What works: ${report.whatWorks}`,
     `Watch for: ${report.watchFor}`,
     `Where we lack: ${report.whereWeLack}`,
-    "— Rated on the PAEI app · Future Leaders — Leadership I",
+    "- Rated on the PAEI app · Future Leaders - Leadership I",
   ].join("\n");
 }
 
@@ -79,6 +79,7 @@ export default function RatePage() {
   const [ownSource, setOwnSource] = useState<"test" | "manual">("test");
   const [manualCode, setManualCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
+  const [hasTestCode, setHasTestCode] = useState(false);
 
   const [people, setPeople] = useState<string[]>([]);
   const [nameInput, setNameInput] = useState("");
@@ -108,6 +109,7 @@ export default function RatePage() {
 
   // Restore session / detect own code from the main test (avoids hydration mismatch).
   useEffect(() => {
+    setHasTestCode(loadCompleted() !== null);
     const session = loadRateSession();
     if (session && session.raterName) {
       setRaterName(session.raterName);
@@ -208,6 +210,16 @@ export default function RatePage() {
     }
     setStep("names");
   }, [entryValid, ownSource, manualParsed]);
+
+  // Cancel manual entry and restore the auto-loaded code from the main test.
+  const restoreTestCode = useCallback(() => {
+    const completed = loadCompleted();
+    if (!completed) return;
+    setOwnCode(buildCode(computeResults(completed)));
+    setOwnSource("test");
+    setManualCode("");
+    setCodeError(null);
+  }, []);
 
   // ---- Names ----
   const handleAddPerson = useCallback(() => {
@@ -366,7 +378,7 @@ export default function RatePage() {
             Whose people are we rating?
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/55">
-            You analyze specific people — their perceived code, whether you can
+            You analyze specific people: their perceived code, whether you can
             work with them, and where each of you lacks. Perception, not truth:
             this is data about the relationship, not a verdict on the person.
           </p>
@@ -417,11 +429,20 @@ export default function RatePage() {
                   className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-display text-xl tracking-widest text-white placeholder:font-sans placeholder:text-base placeholder:tracking-normal placeholder:text-white/40 focus:border-white/40 focus:outline-none"
                 />
                 <p className="mt-2 text-xs text-white/45">
-                  Four letters in order P A E I — capital = dominant, small =
+                  Four letters in order P A E I: capital = dominant, small =
                   secondary. Loaded from your test when available.
                 </p>
                 {codeError && (
                   <p className="mt-2 text-sm text-rose-400/90">{codeError}</p>
+                )}
+                {hasTestCode && (
+                  <button
+                    type="button"
+                    onClick={restoreTestCode}
+                    className="mt-3 text-sm text-white/50 underline-offset-4 hover:text-white hover:underline"
+                  >
+                    ← Cancel, use my test code
+                  </button>
                 )}
               </div>
             )}
@@ -445,7 +466,7 @@ export default function RatePage() {
             Who are you analyzing?
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-white/55">
-            Pick the people you are least sure about — that is where the answer
+            Pick the people you are least sure about: that is where the answer
             matters. Typical: 2–4 people. Names stay in this browser tab only.
           </p>
 
@@ -522,7 +543,7 @@ export default function RatePage() {
               <p className="text-sm font-medium text-white/70">
                 Questions about {currentName}{" "}
                 <span className="text-white/35">
-                  — {questionIdx + 1} of {PERCEPTION_ANSWER_COUNT}
+                  - {questionIdx + 1} of {PERCEPTION_ANSWER_COUNT}
                 </span>
               </p>
               <Link
@@ -592,7 +613,7 @@ export default function RatePage() {
                 How you see them
               </p>
               <p className="mt-1 text-xs text-white/45">
-                Perception, not truth — this is data about the relationship, not
+                Perception, not truth: this is data about the relationship, not
                 a verdict on {showingName}.
               </p>
 
@@ -679,7 +700,7 @@ export default function RatePage() {
             Your room
           </h1>
           <p className="mt-3 text-sm font-medium leading-relaxed text-amber-200/80">
-            The people you rated are in this room. Present out loud — hearing
+            The people you rated are in this room. Present out loud: hearing
             how you are seen is the point.
           </p>
           <p className="mt-2 text-xs text-white/45">
@@ -858,9 +879,9 @@ export default function RatePage() {
 
       <footer className="border-t border-white/10 py-8">
         <p className="text-xs text-white/45">
-          Your session stays in this browser tab — a refresh resumes where you
+          Your session stays in this browser tab: a refresh resumes where you
           left off. Use New test to clear it and start over. Nothing is sent
-          anywhere. Rated on the PAEI app · Future Leaders — Leadership I.
+          anywhere. Rated on the PAEI app · Future Leaders - Leadership I.
         </p>
       </footer>
     </main>

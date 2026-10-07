@@ -29,9 +29,9 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Producer is the part of you that turns effort into results. When this dimension is strong, you feel an itch to start, to finish, and to show what got done.",
     essence: "turns effort into results",
     covers: "they push through obstacles until it is done",
-    why: "A low Producer score usually means you do not feel the itch to start before everything is clear, and finishing alone is not your default. That is not laziness — your energy goes into other dimensions. The risk is tasks that stall because nobody is pushing them over the line.",
+    why: "A low Producer score usually means you do not feel the itch to start before everything is clear, and finishing alone is not your default. That is not laziness. Your energy goes into other dimensions. The risk is tasks that stall because nobody is pushing them over the line.",
     improve: [
-      "Pick one task per week and finish it fully before starting another — notice the urge to switch early.",
+      "Pick one task per week and finish it fully before starting another, and notice the urge to switch early.",
       "When you avoid a task, name the single next physical step and do just that step.",
       "Ask someone for a deadline on one thing you would normally leave open-ended.",
     ],
@@ -49,20 +49,20 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     roles: [
       "Delivery & execution lead",
       "Project manager",
-      "Growth & sales — the closing side",
+      "Growth & sales: the closing side",
     ],
     nickname: "Lone Ranger",
     color: "#f59e0b",
     reflection: [
-      "Recall a task you pushed through on willpower alone. What did it cost — your energy, the quality, or a relationship?",
+      "Recall a task you pushed through on willpower alone. What did it cost: your energy, the quality, or a relationship?",
       "When did you last do something yourself that you could have delegated? What made you distrust the handoff?",
       "Would your teammates say you care more about shipped results or about the people doing the shipping?",
     ],
     work: {
-      feedback: "Lead with the result. What shipped, what didn't, what's next — skip the preamble.",
+      feedback: "Lead with the result. What shipped, what didn't, what's next. Skip the preamble.",
       delegate: "Hand me a concrete outcome and a deadline. Check progress, not process.",
       pitch: "Frame it as action: what we do, how fast, what it produces. Vision alone loses me.",
-      need: "People who finish — and someone to remind me that done beats perfect.",
+      need: "People who finish, and someone to remind me that done beats perfect.",
     },
   },
   A: {
@@ -72,9 +72,9 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Administrator is the part of you that builds order. You want to know the scope, the roles, and the timeline before things move.",
     essence: "builds order",
     covers: "they build the order before things move",
-    why: "A low Administrator score usually means scope, roles, and timelines are not what you reach for first. You would rather move than plan. The risk is rework — things get done twice because they were never framed once.",
+    why: "A low Administrator score usually means scope, roles, and timelines are not what you reach for first. You would rather move than plan. The risk is rework: things get done twice because they were never framed once.",
     improve: [
-      "Before your next group task, spend ten minutes writing the goal, who does what, and by when — then share it.",
+      "Before your next group task, spend ten minutes writing the goal, who does what, and by when, then share it.",
       "When something goes wrong, ask 'what process was missing?' before asking who to blame.",
       "Keep one running checklist for a recurring task and update it every time you do the task.",
     ],
@@ -105,7 +105,7 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       feedback: "Be specific. Bring data, name the process that failed, propose the fix.",
       delegate: "Set scope, roles, and timeline up front. I'll run it tightly once the frame is clear.",
       pitch: "Show the plan behind the idea: steps, owners, risks. Structure earns my trust.",
-      need: "People who respect agreed processes — and tell me when a rule has become a cage.",
+      need: "People who respect agreed processes, and tell me when a rule has become a cage.",
     },
   },
   E: {
@@ -115,7 +115,7 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Entrepreneur is the part of you that looks ahead. You get energy from new ideas, new opportunities, and challenging how things are done today.",
     essence: "looks ahead",
     covers: "they place the bets on new ideas",
-    why: "A low Entrepreneur score usually means new ideas do not pull you by default, and the status quo rarely bothers you. The risk is drift — a year passes and nothing has changed because nothing forced a choice.",
+    why: "A low Entrepreneur score usually means new ideas do not pull you by default, and the status quo rarely bothers you. The risk is drift: a year passes and nothing has changed because nothing forced a choice.",
     improve: [
       "Write down three ideas you had this month. Pick one and take one concrete step this week.",
       "When something annoys you, ask 'what would the better version of this look like?'",
@@ -142,13 +142,13 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     reflection: [
       "When did you last feel excited by an idea and not act on it? What stopped you?",
       "What do you keep doing 'the way it has always been done' that you secretly suspect could be better?",
-      "Where do you want to be in three years — and what is one step you could take this month toward it?",
+      "Where do you want to be in three years, and what is one step you could take this month toward it?",
     ],
     work: {
       feedback: "Be candid and fast. A hard truth early beats a comfortable story late.",
       delegate: "Give me the problem, not the solution. Check direction, not steps.",
       pitch: "Lead with the future state and why it matters. Details can follow.",
-      need: "Builders who turn sparks into shipped work — and ground me when I start too many fires.",
+      need: "Builders who turn sparks into shipped work, and ground me when I start too many fires.",
     },
   },
   I: {
@@ -158,9 +158,9 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       "The Integrator is the part of you that holds people together. You read the room, care about relationships, and want the group to work as one.",
     essence: "holds people together",
     covers: "they read the room and hold people together",
-    why: "A low Integrator score usually means you do not naturally scan the room for mood and tension. You can still care deeply — you just show it through work rather than words. The risk is that people do not know where they stand with you.",
+    why: "A low Integrator score usually means you do not naturally scan the room for mood and tension. You can still care deeply; you just show it through work rather than words. The risk is that people do not know where they stand with you.",
     improve: [
-      "Before your next meeting, ask one person how they are actually doing — and listen without solving.",
+      "Before your next meeting, ask one person how they are actually doing, and listen without solving.",
       "When you notice tension, say one honest thing about it instead of waiting for someone else to.",
       "In your next group decision, ask 'who does this affect who is not in the room?'",
     ],
@@ -182,7 +182,7 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     nickname: "Super-Follower",
     color: "#10b981",
     reflection: [
-      "When did you last sense that someone on your team was struggling — before they said anything?",
+      "When did you last sense that someone on your team was struggling, before they said anything?",
       "Describe a conflict you chose to avoid. What did that cost, and what would you do differently?",
       "Whose perspective do you habitually leave out of your decisions, and what would change if you included it?",
     ],
@@ -190,7 +190,7 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
       feedback: "Be honest and private. Hard messages one-on-one, never in front of the group.",
       delegate: "Tell me why it matters to the team. I'll carry it if people feel the purpose.",
       pitch: "Connect it to people: who it helps, how the team wins, what it feels like to build it.",
-      need: "Allies who say the quiet part out loud — and someone to back me when a decision gets unpopular.",
+      need: "Allies who say the quiet part out loud, and someone to back me when a decision gets unpopular.",
     },
   },
 };
@@ -252,7 +252,7 @@ export const COMBINATIONS: Combination[] = [
     letters: "PAEI",
     name: "Complete Manager",
     description:
-      "Strong in all four. Very rare — good at everything but master of nothing.",
+      "Strong in all four. Very rare: good at everything but master of nothing.",
   },
 ];
 
@@ -269,7 +269,7 @@ export const CONFLICTS: Conflict[] = [
     b: "A",
     title: "Speed vs. Structure",
     description:
-      "P pushes to move now; A wants a plan first. When both are alive in you, one side tends to win and the other feels ignored — things either ship messy or they ship late.",
+      "P pushes to move now; A wants a plan first. When both are alive in you, one side tends to win and the other feels ignored: things either ship messy or they ship late.",
   },
   {
     a: "P",
@@ -283,7 +283,7 @@ export const CONFLICTS: Conflict[] = [
     b: "A",
     title: "Change vs. Stability",
     description:
-      "E wants to break what exists; A wants to make it reliable. This is the classic Adizes tension — vision needs a system to survive, and systems are afraid of vision.",
+      "E wants to break what exists; A wants to make it reliable. This is the classic Adizes tension: vision needs a system to survive, and systems are afraid of vision.",
   },
   {
     a: "E",
@@ -297,7 +297,7 @@ export const CONFLICTS: Conflict[] = [
     b: "E",
     title: "Doing vs. Dreaming",
     description:
-      "P wants the next task finished; E wants the next big thing started. Both are forward energy — the tension here is focus, not direction.",
+      "P wants the next task finished; E wants the next big thing started. Both are forward energy. The tension here is focus, not direction.",
   },
   {
     a: "A",

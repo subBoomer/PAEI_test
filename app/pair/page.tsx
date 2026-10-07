@@ -69,7 +69,7 @@ export default function PairPage() {
     const pb = parseAnswerString(inputB);
     if (!pa || !pb) {
       setError(
-        "Both fields need a complete result — paste the full share link, or the 20-digit code from one."
+        "Both fields need a complete result: paste the full share link, or the 20-digit code from one."
       );
       setMemberA(null);
       setMemberB(null);
@@ -113,7 +113,7 @@ export default function PairPage() {
           Co-founder pair check
         </h1>
         <p className="mt-3 max-w-xl text-white/55">
-          Paste two people&apos;s result links — yours and your co-founder&apos;s.
+          Paste two people&apos;s result links: yours and your co-founder&apos;s.
           You will see where you cover each other&apos;s gaps and which tensions
           run between you. Nothing is stored; the comparison lives in the link.
         </p>
@@ -239,7 +239,7 @@ export default function PairPage() {
                       </span>
                       <div>
                         <p className="font-display text-sm font-semibold text-white">
-                          {p.name} — led by {c.strong}
+                          {p.name} - led by {c.strong}
                         </p>
                         <p className="mt-1 text-sm leading-relaxed text-white/55">
                           {c.note}
@@ -259,7 +259,7 @@ export default function PairPage() {
                 Tensions between you
               </h2>
               <p className="mt-2 text-sm text-white/45">
-                Not flaws — just the axes where you will pull in opposite
+                Not flaws: just the axes where you will pull in opposite
                 directions. Naming them early prevents most founding-team
                 blow-ups.
               </p>
@@ -310,7 +310,7 @@ export default function PairPage() {
 
       <footer className="mt-auto border-t border-white/10 py-10">
         <p className="text-sm text-white/40">
-          Both people&apos;s data stays inside the shared link — nothing is sent
+          Both people&apos;s data stays inside the shared link: nothing is sent
           to a server.
         </p>
       </footer>

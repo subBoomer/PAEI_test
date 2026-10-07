@@ -23,7 +23,7 @@ export default function ScaleSelector({
               key={n}
               type="button"
               aria-pressed={selected}
-              aria-label={`${n} — ${LABELS[n - 1]}`}
+              aria-label={`${n} - ${LABELS[n - 1]}`}
               disabled={disabled}
               onClick={() => onChange(n)}
               className={[

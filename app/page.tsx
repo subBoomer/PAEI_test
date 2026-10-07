@@ -6,13 +6,13 @@ const SHORT: Record<string, string> = {
   P: "Gets it done. Results first, always.",
   A: "Builds the system behind the results.",
   E: "Sees the future and moves first.",
-  I: "Holds the people — and the culture — together.",
+  I: "Holds the people and the culture together.",
 };
 
 const STEPS = [
   {
     title: "Answer 20 questions",
-    body: "Five questions per dimension. Answer honestly — there are no right answers, and no timer.",
+    body: "Five questions per dimension. Answer honestly: there are no right answers, and no timer.",
   },
   {
     title: "Get your four-letter code",
@@ -48,7 +48,7 @@ export default function Home() {
         </h1>
         <p className="fade-up mt-6 max-w-2xl text-lg leading-relaxed text-white/60 sm:text-xl">
           No one is strong in all four. This assessment shows where you lead as
-          a Producer, Administrator, Entrepreneur, and Integrator — and where
+          a Producer, Administrator, Entrepreneur, and Integrator, and where
           you don&apos;t. Twenty questions. One four-letter code.
         </p>
         <div className="fade-up mt-10 flex flex-wrap items-center gap-4">
@@ -70,7 +70,7 @@ export default function Home() {
         </h2>
         <p className="mt-3 max-w-2xl text-white/50">
           Based on the PAEI management model by Dr. Ichak Adizes. Each of us has
-          all four — in different amounts.
+          all four, in different amounts.
         </p>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {DIMENSION_ORDER.map((letter) => {
@@ -132,7 +132,7 @@ export default function Home() {
           More tools
         </h2>
         <p className="mt-3 max-w-2xl text-white/50">
-          Beyond the individual test — for co-founders, teams, and teachers.
+          Beyond the individual test: for co-founders, teams, and teachers.
         </p>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Link
@@ -169,7 +169,7 @@ export default function Home() {
             <p className="mt-2 text-sm leading-relaxed text-white/50">
               Analyze specific people in your life: their perceived code, how
               you work together, and where each of you lacks. Built for
-              classrooms and teams — perception, not truth.
+              classrooms and teams: perception, not truth.
             </p>
           </Link>
         </div>
@@ -177,7 +177,7 @@ export default function Home() {
 
       <footer className="border-t border-white/10 py-10">
         <p className="text-sm text-white/40">
-          Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders —
+          Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders -
           Leadership I.
         </p>
         <p className="mt-1 text-sm text-white/45">

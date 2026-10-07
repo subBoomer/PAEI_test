@@ -29,7 +29,7 @@ export default function ResultCard({
                 color: profile.color,
                 opacity: r.rank === "Missing" ? 0.25 : r.capital ? 1 : 0.55,
               }}
-              title={`${profile.name} — ${r.rank}`}
+              title={`${profile.name} - ${r.rank}`}
             >
               {display}
             </span>
@@ -64,7 +64,7 @@ export default function ResultCard({
 
       <p className="mt-4 max-w-md text-xs text-white/50">
         {code === code.toLowerCase()
-          ? "No dominant dimension — your strengths are spread evenly."
+          ? "No dominant dimension: your strengths are spread evenly."
           : "Capital letters are natural strengths. Small letters are present but not natural."}
       </p>
     </div>

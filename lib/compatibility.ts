@@ -43,12 +43,12 @@ export function codeMeaning(results: DimensionResult[]): string {
   if (doms.length > 0) {
     const key = DIMENSION_ORDER.filter((l) => doms.includes(l)).join("");
     const combo = COMBINATIONS.find((c) => c.letters === key);
-    if (combo) return `${combo.name} — ${combo.description}`;
-    // No combination for this shape (e.g. a single dominant letter) —
+    if (combo) return `${combo.name}: ${combo.description}`;
+    // No combination for this shape (e.g. a single dominant letter) -
     // one clean sentence instead of the full profile text.
     return firstSentence(PROFILES[top.letter].meaning);
   }
-  return `No dominant dimension — ${PROFILES[top.letter].name} leans highest at ${top.average.toFixed(1)}.`;
+  return `No dominant dimension. ${PROFILES[top.letter].name} leans highest at ${top.average.toFixed(1)}.`;
 }
 
 /** Rewrite a first-person work entry ("Give me…", "I'll run…") as guidance about someone else. */
@@ -75,7 +75,7 @@ export function sameTopLine(
     absent.length === 0
       ? "nothing outside the four shows up"
       : `nobody ${absent.map((l) => PROFILES[l].essence).join(" or ")}`;
-  return `Two ${PROFILES[letter].name} drivers — great execution, competing pace, ${absence}.`;
+  return `Two ${PROFILES[letter].name} drivers: great execution, competing pace, ${absence}.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,30 +175,30 @@ export function computeCompatibility(
     if (theyCoverMe.length > 0) {
       const verb = theyCoverMe.length === 1 ? "covers" : "cover";
       parts.push(
-        `Their ${nameList(theyCoverMe)} ${verb} what you skip — ${coversList(
+        `Their ${nameList(theyCoverMe)} ${verb} what you skip: ${coversList(
           theyCoverMe
         )}.`
       );
     }
     if (iCoverThem.length > 0) {
       parts.push(
-        `You cover their ${nameList(iCoverThem)} — ${essenceList(iCoverThem)}.`
+        `You cover their ${nameList(iCoverThem)}: ${essenceList(iCoverThem)}.`
       );
     }
     reasons.push(parts.join(" "));
   } else {
-    reasons.push("No big coverage swap between you — you work the same ground.");
+    reasons.push("No big coverage swap between you. You work the same ground.");
   }
 
   if (topConflict && topsBothDom) {
     reasons.push(
-      `${topConflict.title} — ${firstSentence(topConflict.description)}`
+      `${topConflict.title}: ${firstSentence(topConflict.description)}`
     );
   } else if (sameTop && topsBothDom) {
     reasons.push(sameTopLine(rTop, rater));
   } else if (domConflict) {
     reasons.push(
-      `${domConflict.title} — ${firstSentence(domConflict.description)}`
+      `${domConflict.title}: ${firstSentence(domConflict.description)}`
     );
   }
 
@@ -206,7 +206,7 @@ export function computeCompatibility(
     reasons.push(
       `Between you, nobody holds the ${nameList(
         sharedGaps
-      )} side — tension would go unspoken.`
+      )} side: tension would go unspoken.`
     );
   }
 
@@ -214,13 +214,13 @@ export function computeCompatibility(
   const watchFor =
     reasons.slice(1).find((r) => !r.startsWith("Between you")) ??
     (sharedGaps.length > 0
-      ? `Between you, nobody holds the ${nameList(sharedGaps)} side — tension would go unspoken.`
-      : "Nothing sharp between you — the usual friction of any pairing.");
+      ? `Between you, nobody holds the ${nameList(sharedGaps)} side: tension would go unspoken.`
+      : "Nothing sharp between you: the usual friction of any pairing.");
   const rWeak = [...rater].sort((a, b) => a.average - b.average)[0];
   const pWeak = [...perceived].sort((a, b) => a.average - b.average)[0];
   const whereWeLack =
     sharedGaps.length > 0
-      ? `Between you, nobody holds the ${nameList(sharedGaps)} side — tension would go unspoken.`
+      ? `Between you, nobody holds the ${nameList(sharedGaps)} side: tension would go unspoken.`
       : `You are weakest on ${PROFILES[rWeak.letter].name} (${rWeak.average.toFixed(1)}); they are weakest on ${PROFILES[pWeak.letter].name} (${pWeak.average.toFixed(1)}).`;
 
   return {
@@ -290,7 +290,7 @@ export function buildBestWith(results: DimensionResult[]): BestWithCard[] {
     const combo = COMBINATIONS.find((c) => c.letters === key);
     const lines = letters
       .slice(0, 2)
-      .map((l) => `Their ${PROFILES[l].name} covers what you skip — ${PROFILES[l].covers}.`);
+      .map((l) => `Their ${PROFILES[l].name} covers what you skip: ${PROFILES[l].covers}.`);
     if (combo && lines.length < 3) lines.push(combo.description);
     cards.push({
       kind: "complement",
@@ -314,7 +314,7 @@ export function buildBestWith(results: DimensionResult[]): BestWithCard[] {
         lines: [
           `One strong ${p.name} takes your lowest score (${gap.average.toFixed(
             1
-          )}) off your plate — ${p.covers}.`,
+          )}) off your plate: ${p.covers}.`,
           `You keep the pace on ${nameList(doms)}; they hold the side you drop.`,
         ],
         workLine: asGuidance(p.work.pitch),
@@ -337,11 +337,11 @@ export function buildBestWith(results: DimensionResult[]): BestWithCard[] {
       title: combo ? `Another ${combo.name}` : `Another ${key}`,
       badge: "Friction profile",
       lines: [
-        `Same top letter: two ${PROFILES[doms[0]].name} drivers — great execution, competing pace, ${absence}.`,
+        `Same top letter: two ${PROFILES[doms[0]].name} drivers: great execution, competing pace, ${absence}.`,
         ...(combo ? [combo.description] : []),
       ],
       workLine:
-        "One of you will win and the other will feel ignored — decide up front who owns pace and who owns the plan.",
+        "One of you will win and the other will feel ignored. Decide up front who owns pace and who owns the plan.",
     });
   } else if (doms.length === 1) {
     const top = doms[0];
@@ -356,9 +356,9 @@ export function buildBestWith(results: DimensionResult[]): BestWithCard[] {
       letters: key,
       title: combo ? `A ${combo.name}` : key,
       badge: "Friction profile",
-      lines: [`${pair.title} — ${pair.description}`],
+      lines: [`${pair.title}: ${pair.description}`],
       workLine:
-        "Name the tension before the work starts — one of you owns pace, the other owns the plan.",
+        "Name the tension before the work starts: one of you owns pace, the other owns the plan.",
     });
   } else {
     // All four dominant — the only friction is another Complete Manager.
@@ -368,11 +368,11 @@ export function buildBestWith(results: DimensionResult[]): BestWithCard[] {
       title: "Another Complete Manager",
       badge: "Friction profile",
       lines: [
-        "Strong in all four. Very rare — good at everything but master of nothing.",
+        "Strong in all four. Very rare: good at everything but master of nothing.",
         "Two Complete Managers compete for every seat.",
       ],
       workLine:
-        "Agree who owns which seat before the first disagreement — otherwise every decision is a duel.",
+        "Agree who owns which seat before the first disagreement. Otherwise every decision is a duel.",
     });
   }
 

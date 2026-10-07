@@ -15,7 +15,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PAEI Test — Discover Your Management Style",
+  title: "PAEI Test - Discover Your Management Style",
   description:
     "A free 20-question assessment based on Dr. Ichak Adizes' PAEI model. Find out whether you lead as a Producer, Administrator, Entrepreneur, or Integrator.",
   openGraph: {
