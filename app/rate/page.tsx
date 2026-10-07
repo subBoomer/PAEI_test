@@ -290,6 +290,13 @@ export default function RatePage() {
   );
 
   const handleStartOver = useCallback(() => {
+    if (
+      !window.confirm(
+        "Start a new test? This clears the people you rated in this session."
+      )
+    ) {
+      return;
+    }
     clearRateSession();
     setRaterName("");
     setOwnCode("");
@@ -298,6 +305,7 @@ export default function RatePage() {
     setRated([]);
     setCurrentName(null);
     setShowingName(null);
+    setPresentFor(null);
     setStep("entry");
     const completed = loadCompleted();
     if (completed) {
@@ -329,9 +337,20 @@ export default function RatePage() {
         >
           ← Home
         </Link>
-        <span className="font-display text-sm font-medium text-white/60">
-          Rate your people
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="font-display text-sm font-medium text-white/60">
+            Rate your people
+          </span>
+          {(raterName || people.length > 0 || rated.length > 0 || currentName) && (
+            <button
+              type="button"
+              onClick={handleStartOver}
+              className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white/60 transition-colors hover:border-white/40 hover:text-white"
+            >
+              New test
+            </button>
+          )}
+        </div>
       </header>
 
       {/* ================================================================ ENTRY */}
@@ -719,7 +738,7 @@ export default function RatePage() {
               onClick={handleStartOver}
               className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/50 transition-colors hover:text-white"
             >
-              Start over
+              New test
             </button>
           </div>
         </section>
@@ -792,9 +811,10 @@ export default function RatePage() {
         })()}
 
       <footer className="border-t border-white/10 py-8">
-        <p className="text-xs text-white/40">
-          Nothing is stored or sent anywhere — results die with the tab. Rated
-          on the PAEI app · Future Leaders — Leadership I.
+        <p className="text-xs text-white/45">
+          Your session stays in this browser tab — a refresh resumes where you
+          left off. Use New test to clear it and start over. Nothing is sent
+          anywhere. Rated on the PAEI app · Future Leaders — Leadership I.
         </p>
       </footer>
     </main>
