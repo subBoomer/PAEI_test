@@ -4,6 +4,10 @@ export interface DimensionProfile {
   letter: Dimension;
   name: string;
   meaning: string;
+  /** Short fragment of `meaning`, used to compose compatibility reasons. */
+  essence: string;
+  /** Third-person line: what a strong letter of this kind covers for someone who skips it. */
+  covers: string;
   strengths: string[];
   weaknesses: string[];
   roles: string[];
@@ -19,6 +23,8 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     name: "Producer",
     meaning:
       "The Producer is the part of you that turns effort into results. When this dimension is strong, you feel an itch to start, to finish, and to show what got done.",
+    essence: "turns effort into results",
+    covers: "they push through obstacles until it is done",
     strengths: [
       "Gets results",
       "Hardworking and fast",
@@ -54,6 +60,8 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     name: "Administrator",
     meaning:
       "The Administrator is the part of you that builds order. You want to know the scope, the roles, and the timeline before things move.",
+    essence: "builds order",
+    covers: "they build the order before things move",
     strengths: [
       "Organized and systematic",
       "Detail-oriented",
@@ -89,6 +97,8 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     name: "Entrepreneur",
     meaning:
       "The Entrepreneur is the part of you that looks ahead. You get energy from new ideas, new opportunities, and challenging how things are done today.",
+    essence: "looks ahead",
+    covers: "they place the bets on new ideas",
     strengths: [
       "Visionary and innovative",
       "Spots opportunities early",
@@ -124,6 +134,8 @@ export const PROFILES: Record<Dimension, DimensionProfile> = {
     name: "Integrator",
     meaning:
       "The Integrator is the part of you that holds people together. You read the room, care about relationships, and want the group to work as one.",
+    essence: "holds people together",
+    covers: "they read the room and hold people together",
     strengths: [
       "Builds trust",
       "Resolves conflict",

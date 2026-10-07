@@ -21,6 +21,23 @@ import {
   matchCombinations,
   uniqueDominant,
 } from "@/lib/scoring";
+import { buildBestWith } from "@/lib/compatibility";
+
+/** Drop work entries that substantially overlap an earlier (stronger) letter's entry. */
+function mergeWorkEntries(entries: string[]): string[] {
+  const kept: string[] = [];
+  for (const entry of entries) {
+    const tokens = new Set(entry.toLowerCase().match(/\w+/g) ?? []);
+    const isDup = kept.some((k) => {
+      const kt = new Set(k.toLowerCase().match(/\w+/g) ?? []);
+      const inter = [...tokens].filter((t) => kt.has(t)).length;
+      const union = new Set([...tokens, ...kt]).size;
+      return union > 0 && inter / union > 0.55;
+    });
+    if (!isDup) kept.push(entry);
+  }
+  return kept;
+}
 
 type ShareState = "idle" | "working" | "copied" | "shared" | "error";
 
@@ -264,6 +281,46 @@ export default function ResultsPage() {
     return [...result.results].sort((a, b) => b.average - a.average)[0];
   }, [result]);
 
+  // A1: all dominant letters, strongest first; fall back to strongest lean
+  // when nothing is dominant so the card still exists.
+  const dominantLetters = useMemo(() => {
+    if (!result) return [];
+    const doms = result.results
+      .filter((r) => r.capital)
+      .sort((a, b) => b.average - a.average)
+      .map((r) => r.letter);
+    if (doms.length > 0) return doms;
+    return strongest ? [strongest.letter] : [];
+  }, [result, strongest]);
+
+  const hasDominant = useMemo(
+    () => result?.results.some((r) => r.capital) ?? false,
+    [result]
+  );
+
+  const workSections = useMemo(() => {
+    if (!result || dominantLetters.length === 0) return [];
+    const labels: Record<string, string> = {
+      feedback: "Feedback",
+      delegate: "Delegation",
+      pitch: "Pitching ideas",
+      need: "What I need",
+    };
+    return (["feedback", "delegate", "pitch", "need"] as const).map((key) => ({
+      key,
+      label: labels[key],
+      entries: mergeWorkEntries(
+        dominantLetters.map((l) => PROFILES[l].work[key])
+      ),
+    }));
+  }, [result, dominantLetters]);
+
+  // A2: best complements + friction profile.
+  const bestWith = useMemo(() => {
+    if (!result) return [];
+    return buildBestWith(result.results);
+  }, [result]);
+
   const handleCopyReflection = useCallback(async () => {
     if (!result || !weakest) return;
     const p = PROFILES[weakest.letter];
@@ -288,17 +345,22 @@ export default function ResultsPage() {
   }, [result, weakest]);
 
   const handleCopyWork = useCallback(async () => {
-    if (!result || !strongest) return;
-    const p = PROFILES[strongest.letter];
+    if (!result || workSections.length === 0) return;
+    const names = dominantLetters
+      .map((l) => PROFILES[l].name)
+      .join(" and ");
     const lines: string[] = [
       `How to work with me — ${result.code}`,
-      `I lead through ${p.name}.`,
+      hasDominant
+        ? `I lead through ${names}.`
+        : `No dominant dimension — my closest lean is ${names}.`,
       "",
-      `Feedback: ${p.work.feedback}`,
-      `Delegation: ${p.work.delegate}`,
-      `Pitching ideas: ${p.work.pitch}`,
-      `What I need: ${p.work.need}`,
     ];
+    for (const section of workSections) {
+      for (const entry of section.entries) {
+        lines.push(`${section.label}: ${entry}`);
+      }
+    }
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopiedWork(true);
@@ -306,7 +368,7 @@ export default function ResultsPage() {
       window.prompt("Copy your work style card:", lines.join("\n"));
     }
     setTimeout(() => setCopiedWork(false), 2500);
-  }, [result, strongest]);
+  }, [result, workSections, dominantLetters, hasDominant]);
 
   if (missing) {
     return (
@@ -497,6 +559,61 @@ export default function ResultsPage() {
         </section>
       )}
 
+      {/* Who I work best with */}
+      {bestWith.length > 0 && (
+        <section className="border-t border-white/10 py-10">
+          <h2 className="font-display text-xl font-semibold text-white">
+            Who I work best with
+          </h2>
+          <p className="mt-2 text-sm text-white/45">
+            The people who complete your profile — and the one who collides
+            with it.
+          </p>
+          {!hasDominant && (
+            <p className="mt-3 text-sm leading-relaxed text-white/40">
+              No dominant dimension means no default seat — you are still
+              deciding where you fit. That is an advantage in a startup: you
+              can plug into whichever role the team is missing. Try leaning
+              into one dimension for a semester and see which seat feels like
+              yours.
+            </p>
+          )}
+          <div className="mt-6 space-y-4">
+            {bestWith.map((card) => (
+              <div
+                key={card.kind + card.letters}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+              >
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <span className="font-display text-2xl font-bold text-white">
+                    {card.letters}
+                  </span>
+                  <span className="font-display text-lg font-semibold text-white/80">
+                    {card.title}
+                  </span>
+                  <span className="ml-auto rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-white/45 ring-1 ring-white/10">
+                    {card.badge}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  {card.lines.map((line, i) => (
+                    <p key={i} className="text-sm leading-relaxed text-white/55">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-white/70">
+                  <span className="font-medium text-white/80">
+                    How to work with them:{" "}
+                  </span>
+                  {card.workLine}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Startup fit */}
       <section className="border-t border-white/10 py-10">
         <h2 className="font-display text-xl font-semibold text-white">
@@ -560,35 +677,37 @@ export default function ResultsPage() {
       </section>
 
       {/* How to work with me */}
-      {strongest && (
+      {workSections.length > 0 && (
         <section className="border-t border-white/10 py-10">
           <h2 className="font-display text-xl font-semibold text-white">
             How to work with me
           </h2>
           <p className="mt-2 text-sm text-white/45">
-            Generated from your strongest dimension — {PROFILES[strongest.letter].name} (
-            {strongest.average.toFixed(1)}). Share this with teammates so they
-            know what works on you.
+            {hasDominant
+              ? `Generated from your dominant dimensions — ${dominantLetters
+                  .map((l) => PROFILES[l].name)
+                  .join(", ")}.`
+              : `No dominant dimension — generated from your closest lean, ${
+                  PROFILES[dominantLetters[0]].name
+                } (${strongest!.average.toFixed(1)}).`}{" "}
+            Share this with teammates so they know what works on you.
           </p>
           <div className="mt-6 space-y-3">
-            {(
-              [
-                ["Feedback", "feedback"],
-                ["Delegation", "delegate"],
-                ["Pitching ideas", "pitch"],
-                ["What I need", "need"],
-              ] as const
-            ).map(([label, key]) => (
+            {workSections.map((section) => (
               <div
-                key={key}
+                key={section.key}
                 className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
               >
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
-                  {label}
+                  {section.label}
                 </p>
-                <p className="mt-1.5 text-sm leading-relaxed text-white/65">
-                  {PROFILES[strongest.letter].work[key]}
-                </p>
+                <div className="mt-1.5 space-y-1.5">
+                  {section.entries.map((entry, i) => (
+                    <p key={i} className="text-sm leading-relaxed text-white/65">
+                      {entry}
+                    </p>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

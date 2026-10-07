@@ -159,6 +159,19 @@ export default function Home() {
               strengths, missing dimensions, roles to assign on purpose.
             </p>
           </Link>
+          <Link
+            href="/rate"
+            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30 sm:col-span-2"
+          >
+            <h3 className="font-display text-lg font-semibold text-white">
+              Rate your people →
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Analyze specific people in your life: their perceived code, how
+              you work together, and where each of you lacks. Built for
+              classrooms and teams — perception, not truth.
+            </p>
+          </Link>
         </div>
       </section>
 
