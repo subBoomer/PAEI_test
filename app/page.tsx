@@ -148,18 +148,6 @@ export default function Home() {
             </p>
           </Link>
           <Link
-            href="/cohort"
-            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
-          >
-            <h3 className="font-display text-lg font-semibold text-white">
-              Cohort view for teachers →
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">
-              Paste everyone&apos;s links. Get the group snapshot: collective
-              strengths, missing dimensions, roles to assign on purpose.
-            </p>
-          </Link>
-          <Link
             href="/mentor"
             className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
           >
@@ -167,8 +155,9 @@ export default function Home() {
               Mentor view →
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-white/50">
-              Per-student archetypes and development focus, balanced team
-              proposals, and course-design moves for the cohort.
+              The mentor workspace: cohort snapshot, per-student archetypes and
+              development focus, coverage for declared teams, balanced
+              proposals for everyone else, and course-design moves.
             </p>
           </Link>
           <Link

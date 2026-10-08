@@ -59,8 +59,8 @@ Deploys on **Vercel** with zero configuration — connect the repo and every pus
   quiz/page.tsx       Quiz (one question at a time)
   results/page.tsx    Results + share
   pair/page.tsx       Co-founder pair check
-  cohort/page.tsx     Cohort snapshot for teachers
-  mentor/page.tsx     Mentor view: rosters, team proposals, course moves
+  cohort/page.tsx     Redirects to mentor view (merged)
+  mentor/page.tsx     Mentor workspace: cohort snapshot, roster, declared teams, proposals, course moves
   rate/page.tsx       Rate Your People flow
 /components
   QuestionCard.tsx    Question display
