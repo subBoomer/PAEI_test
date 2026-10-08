@@ -8,9 +8,11 @@ import { QUESTIONS } from "@/data/questions";
 import {
   ANSWER_COUNT,
   clearAnswers,
+  loadName,
   loadOrder,
   loadPartial,
   saveAnswers,
+  saveName,
   saveOrder,
   shuffledOrder,
 } from "@/lib/answers";
@@ -25,6 +27,7 @@ export default function QuizPage() {
   // question index, so shuffling never affects scoring or share links.
   const [order, setOrder] = useState<number[] | null>(null);
   const [ready, setReady] = useState(false);
+  const [name, setName] = useState("");
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resume mid-quiz from sessionStorage on mount (avoids hydration mismatch).
@@ -32,6 +35,7 @@ export default function QuizPage() {
   // just viewed a shared result link (which stores all 20 answers), and
   // resuming it would scatter old selections across the shuffled order.
   useEffect(() => {
+    setName(loadName() ?? "");
     const saved = loadPartial();
     const complete = saved !== null && saved.every((a) => a >= 1);
 
@@ -128,6 +132,21 @@ export default function QuizPage() {
             style={{ width: `${progress}%` }}
           />
         </div>
+      </div>
+
+      {/* Name: optional, travels inside share links so mentors see who is who */}
+      <div className="mt-3">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            const v = e.target.value.slice(0, 40);
+            setName(v);
+            saveName(v);
+          }}
+          placeholder="Your name (optional). It travels with your share link."
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+        />
       </div>
 
       {/* Question */}

@@ -10,6 +10,8 @@ import {
   answersFromHash,
   clearAnswers,
   loadCompleted,
+  loadName,
+  nameFromHash,
   saveAnswers,
   shareUrl,
 } from "@/lib/answers";
@@ -49,7 +51,8 @@ type ShareState = "idle" | "working" | "copied" | "shared" | "error";
  */
 function drawShareImage(
   code: string,
-  rows: { letter: string; name: string; score: string; rank: string; color: string }[]
+  rows: { letter: string; name: string; score: string; rank: string; color: string }[],
+  personName?: string | null
 ): Promise<Blob> {
   const W = 1080;
   const H = 1350;
@@ -90,6 +93,14 @@ function drawShareImage(
   if ("letterSpacing" in ctx) {
     (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing =
       "0px";
+  }
+
+  // Tester's name, carried from the share link.
+  if (personName) {
+    ctx.fillStyle = "#ffffff";
+    ctx.font = body(600, 36);
+    ctx.textAlign = "center";
+    ctx.fillText(personName, W / 2, 185);
   }
 
   // Big code — ResultCard rules: capital full size/opacity, lowercase smaller
@@ -213,6 +224,7 @@ function drawShareImage(
 export default function ResultsPage() {
   const router = useRouter();
   const [answers, setAnswers] = useState<number[] | null>(null);
+  const [personName, setPersonName] = useState<string | null>(null);
   const [missing, setMissing] = useState(false);
   const [shareState, setShareState] = useState<ShareState>("idle");
   const [copiedText, setCopiedText] = useState(false);
@@ -232,6 +244,7 @@ export default function ResultsPage() {
     }
     if (fromHash) saveAnswers(fromHash);
     setAnswers(resolved);
+    setPersonName(nameFromHash(window.location.hash) ?? loadName());
   }, []);
 
   const result = useMemo(() => {
@@ -274,7 +287,7 @@ export default function ResultsPage() {
     if (!result) return;
     setShareState("working");
     try {
-      const blob = await drawShareImage(result.code, shareRows);
+      const blob = await drawShareImage(result.code, shareRows, personName);
       const file = new File([blob], `paei-${result.code}.png`, {
         type: "image/png",
       });
@@ -295,7 +308,7 @@ export default function ResultsPage() {
       setShareState("error");
     }
     setTimeout(() => setShareState("idle"), 2500);
-  }, [result, shareRows]);
+  }, [result, shareRows, personName]);
 
   const handleShareLink = useCallback(async () => {
     if (!shareUrlRef.current) return;
@@ -312,7 +325,11 @@ export default function ResultsPage() {
   const handleCopyResults = useCallback(async () => {
     if (!result) return;
     const lines: string[] = [];
-    lines.push(`My PAEI code: ${result.code}`);
+    lines.push(
+      personName
+        ? `PAEI code for ${personName}: ${result.code}`
+        : `My PAEI code: ${result.code}`
+    );
     if (result.nickname) lines.push(`(Pure form: ${result.nickname})`);
     lines.push("");
     for (const r of result.results) {
@@ -439,7 +456,7 @@ export default function ResultsPage() {
     const lines: string[] = [
       "Coaching prompt - my PAEI growth edge",
       "",
-      "Context: I am a student in Future Leaders - Leadership I. I took the PAEI assessment (management roles: Producer, Administrator, Entrepreneur, Integrator).",
+      `Context: I am ${personName ? `${personName}, ` : ""}a student in Future Leaders - Leadership I. I took the PAEI assessment (management roles: Producer, Administrator, Entrepreneur, Integrator).`,
       "",
       `My code: ${result.code}`,
       ...result.results.map((r) => {
@@ -552,6 +569,7 @@ export default function ResultsPage() {
           results={result.results}
           code={result.code}
           nickname={result.nickname}
+          name={personName}
         />
       </section>
 

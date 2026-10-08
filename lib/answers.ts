@@ -1,5 +1,6 @@
 const STORAGE_KEY = "paei-answers-v1";
 const ORDER_KEY = "paei-order-v1";
+const NAME_KEY = "paei-name-v1";
 export const ANSWER_COUNT = 20;
 
 /** Strict: exactly 20 answers, each 1-5. */
@@ -64,6 +65,32 @@ export function saveOrder(order: number[]): void {
   window.sessionStorage.setItem(ORDER_KEY, JSON.stringify(order));
 }
 
+/** The tester's name. Travels inside share links so mentors see who is who. */
+export function loadName(): string | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.sessionStorage.getItem(NAME_KEY);
+  return raw && raw.length > 0 ? raw : null;
+}
+
+export function saveName(name: string): void {
+  if (typeof window === "undefined") return;
+  const trimmed = name.slice(0, 40);
+  if (trimmed) window.sessionStorage.setItem(NAME_KEY, trimmed);
+  else window.sessionStorage.removeItem(NAME_KEY);
+}
+
+/** Extract a name carried in a share-link hash: #paei=...&n=Marijs */
+export function nameFromHash(hash: string): string | null {
+  const m = /[?&#]n=([^&]+)/.exec(hash);
+  if (!m) return null;
+  try {
+    const decoded = decodeURIComponent(m[1]).trim();
+    return decoded && decoded.length <= 40 ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Fisher–Yates shuffle over question indices 0..19. */
 export function shuffledOrder(): number[] {
   const order = Array.from({ length: ANSWER_COUNT }, (_, i) => i);
@@ -82,5 +109,7 @@ export function answersFromHash(hash: string): number[] | null {
 
 export function shareUrl(answers: number[]): string {
   if (typeof window === "undefined") return "";
-  return `${window.location.origin}/results#paei=${answers.join("")}`;
+  const base = `${window.location.origin}/results#paei=${answers.join("")}`;
+  const name = loadName();
+  return name ? `${base}&n=${encodeURIComponent(name)}` : base;
 }

@@ -5,13 +5,18 @@ export default function ResultCard({
   results,
   code,
   nickname,
+  name,
 }: {
   results: DimensionResult[];
   code: string;
   nickname: string | null;
+  name?: string | null;
 }) {
   return (
     <div className="flex flex-col items-center text-center">
+      {name && (
+        <p className="font-display text-lg font-semibold text-white">{name}</p>
+      )}
       <p className="text-xs font-medium uppercase tracking-[0.25em] text-white/40">
         Your management style code
       </p>

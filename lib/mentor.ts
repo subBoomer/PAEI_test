@@ -24,13 +24,24 @@ function extractName(line: string): string {
   const withoutLink = line
     .replace(/https?:\/\/\S*#paei=[0-5]{20}/g, "")
     .replace(/#paei=[0-5]{20}/g, "")
-    .replace(/[0-5]{20}/g, "");
+    .replace(/[0-5]{20}/g, "")
+    .replace(/[?&#]n=[^&\s]+/g, "");
   const name = withoutLink
     .replace(/^[\s:;,\-–—]+|[\s:;,\-–—]+$/g, "")
     .split(/[:\-–—,]|\s{2,}/)[0]
     .trim();
-  if (!name || name.length > 40) return "";
-  return name;
+  if (name && name.length <= 40) return name;
+  // Fallback: name carried inside the link hash (#paei=...&n=Marijs).
+  const m = /[?&#]n=([^&\s]+)/.exec(line);
+  if (m) {
+    try {
+      const decoded = decodeURIComponent(m[1]).trim();
+      if (decoded && decoded.length <= 40) return decoded;
+    } catch {
+      /* malformed encoding - ignore */
+    }
+  }
+  return "";
 }
 
 export function parseRoster(raw: string): {

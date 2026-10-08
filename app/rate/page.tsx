@@ -5,7 +5,7 @@ import Link from "next/link";
 import QuestionCard from "@/components/QuestionCard";
 import { PERCEPTION_QUESTIONS } from "@/data/perception-questions";
 import { PROFILES } from "@/data/profiles";
-import { loadCompleted } from "@/lib/answers";
+import { loadCompleted, loadName } from "@/lib/answers";
 import {
   buildCode,
   computeResults,
@@ -80,6 +80,7 @@ export default function RatePage() {
   const [manualCode, setManualCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
   const [hasTestCode, setHasTestCode] = useState(false);
+  const [testName, setTestName] = useState<string | null>(null);
 
   const [people, setPeople] = useState<string[]>([]);
   const [nameInput, setNameInput] = useState("");
@@ -110,6 +111,7 @@ export default function RatePage() {
   // Restore session / detect own code from the main test (avoids hydration mismatch).
   useEffect(() => {
     setHasTestCode(loadCompleted() !== null);
+    setTestName(loadName());
     const session = loadRateSession();
     if (session && session.raterName) {
       setRaterName(session.raterName);
@@ -401,20 +403,27 @@ export default function RatePage() {
               You are rating as
             </p>
             {ownSource === "test" && ownCode ? (
-              <div className="mt-3 flex items-center justify-between gap-4">
-                <CodeLetters code={ownCode} size="2.25rem" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOwnSource("manual");
-                    setOwnCode("");
-                    setManualCode("");
-                  }}
-                  className="text-sm text-white/50 underline-offset-4 hover:text-white hover:underline"
-                >
-                  change
-                </button>
-              </div>
+              <>
+                <div className="mt-3 flex items-center justify-between gap-4">
+                  <CodeLetters code={ownCode} size="2.25rem" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOwnSource("manual");
+                      setOwnCode("");
+                      setManualCode("");
+                    }}
+                    className="text-sm text-white/50 underline-offset-4 hover:text-white hover:underline"
+                  >
+                    change
+                  </button>
+                </div>
+                {testName && (
+                  <p className="mt-2 text-xs text-white/45">
+                    Taken as {testName}
+                  </p>
+                )}
+              </>
             ) : (
               <div className="mt-3">
                 <input

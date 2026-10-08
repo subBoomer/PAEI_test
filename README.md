@@ -9,7 +9,7 @@ Built for **Future Leaders — Leadership I**. The question set is designed to b
 ## What it does
 
 - **Landing page** — what PAEI is, the four dimensions, how it works
-- **Quiz** — 20 questions, one at a time, 1–5 scale, progress bar, no timer
+- **Quiz** - 20 questions, one at a time, 1-5 scale, progress bar, no timer. Optional name field: the name travels inside share links, so mentors see who is who without manual mapping
 - **Results** — your four-letter code (e.g. `PAei`), per-dimension scores and ranks, strengths and weaknesses, natural conflicts, combination profiles, and share options
 
 ## Scoring
