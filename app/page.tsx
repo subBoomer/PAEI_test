@@ -129,10 +129,43 @@ export default function Home() {
 
       <section className="border-t border-white/10 py-16">
         <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">
+          For mentors
+        </h2>
+        <p className="mt-3 max-w-2xl text-white/50">
+          One workspace for guiding a group: cohort snapshot, every
+          student&apos;s archetype and development focus, team coverage,
+          proposals for students without a team, and course-design moves.
+          Mentor password required.
+        </p>
+        <Link
+          href="/mentor"
+          className="group mt-8 block rounded-2xl border border-white/15 bg-white/[0.04] p-8 transition-colors hover:border-white/40"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="font-display text-xl font-semibold text-white">
+                Mentor view →
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+                Paste links with names and optional team headers like
+                [Founders]. Choose what to analyze: one person, a whole roster,
+                teams, or two founders.
+              </p>
+            </div>
+            <span className="rounded-full border border-white/15 px-4 py-2 text-xs text-white/50">
+              Password protected
+            </span>
+          </div>
+        </Link>
+      </section>
+
+      <section className="border-t border-white/10 py-16">
+        <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">
           More tools
         </h2>
         <p className="mt-3 max-w-2xl text-white/50">
-          Beyond the individual test: for co-founders, teams, and teachers.
+          For students and teams: check compatibility, or analyze how you see
+          the people around you.
         </p>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Link
@@ -145,19 +178,6 @@ export default function Home() {
             <p className="mt-2 text-sm leading-relaxed text-white/50">
               Paste two result links. See where you cover each other&apos;s
               gaps and which tensions run between you.
-            </p>
-          </Link>
-          <Link
-            href="/mentor"
-            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
-          >
-            <h3 className="font-display text-lg font-semibold text-white">
-              Mentor view →
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">
-              The mentor workspace: cohort snapshot, per-student archetypes and
-              development focus, coverage for declared teams, balanced
-              proposals for everyone else, and course-design moves.
             </p>
           </Link>
           <Link

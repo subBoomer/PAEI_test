@@ -38,7 +38,9 @@ function extractName(line: string): string {
   const m = /[?&#]n=([^&\s]+)/.exec(line);
   if (m) {
     try {
-      const decoded = decodeURIComponent(m[1]).trim();
+      const decoded = decodeURIComponent(m[1])
+        .trim()
+        .replace(/[,;:.]+$/, "");
       if (decoded && decoded.length <= 40) return decoded;
     } catch {
       /* malformed encoding - ignore */
@@ -49,6 +51,9 @@ function extractName(line: string): string {
 
 /** Lines like "[Founders]" or "Team: Founders" set the current team context. */
 const TEAM_HEADER = /^(?:\[([^\]]+)\]|Team:\s*(.+))$/i;
+
+/** One share link or bare code: full URL, bare hash, or 20 bare digits. */
+const LINK_TOKENS = /(?:https?:\/\/\S+|#paei=[0-5]{20}(?:&n=[^&\s]+)?)|[0-5]{20}/g;
 
 /** Headers that mean "explicitly no team" instead of creating a team. */
 const NO_TEAM = /^(?:no\s+team(?:\s+yet)?|solo|ungrouped|looking\s+for\s+team)$/i;
@@ -83,20 +88,37 @@ export function parseRoster(raw: string): {
       currentTeam = null;
       continue;
     }
-    const answers = parseAnswerString(line);
-    if (!answers) {
+    // Easier paste: pull every link out of the line, not just the first —
+    // chat dumps often carry several links on one line. Each link's name is
+    // the text segment directly before it ("Marijs ... and Elina ...").
+    const matches = [...line.matchAll(LINK_TOKENS)];
+    if (matches.length === 0) {
       rejected++;
       continue;
     }
-    const results = computeResults(answers);
-    students.push({
-      id: students.length,
-      name: extractName(line) || "Unnamed",
-      team: currentTeam,
-      answers,
-      results,
-      code: buildCode(results),
-    });
+    let prevEnd = 0;
+    for (const m of matches) {
+      const start = m.index ?? 0;
+      const segment = line.slice(prevEnd, start);
+      prevEnd = start + m[0].length;
+      const answers = parseAnswerString(m[0]);
+      if (!answers) {
+        rejected++;
+        continue;
+      }
+      const name =
+        extractName(segment.replace(/^\s*(?:and|&|or)\s+/i, "")) ||
+        extractName(m[0]);
+      const results = computeResults(answers);
+      students.push({
+        id: students.length,
+        name: name || "Unnamed",
+        team: currentTeam,
+        answers,
+        results,
+        code: buildCode(results),
+      });
+    }
   }
   return { students, rejected, teamsSeen };
 }
@@ -400,7 +422,7 @@ export function buildSummaryText(
   lines.push(`Mentor summary - PAEI cohort (${roster.length} people)`);
   if (rejected > 0) {
     lines.push(
-      `${rejected} line(s) could not be read and were skipped - coverage is partial.`
+      `${rejected} item(s) could not be read and were skipped - coverage is partial.`
     );
   }
   lines.push("");

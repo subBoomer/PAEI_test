@@ -1,10 +1,17 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { PROFILES } from "@/data/profiles";
 import type { Dimension } from "@/data/questions";
 import { cohortReport } from "@/lib/pair";
+import { computeCompatibility, tierTone } from "@/lib/compatibility";
 import {
   buildCard,
   buildSummaryText,
@@ -15,6 +22,133 @@ import {
   type MentorStudent,
   type Team,
 } from "@/lib/mentor";
+
+// Password gate: the plaintext never appears in the bundle - only hashes.
+// SHA-256 on secure contexts (localhost, Vercel); FNV-1a fallback for
+// plain-HTTP LAN access where crypto.subtle is unavailable.
+const MENTOR_SHA256 =
+  "151c3cc8ed37ba38b78d87a4e89b48513e8b2976e0aeecc7dca504278abb0c9a";
+const MENTOR_FNV = "abf98e6b";
+const UNLOCK_KEY = "paei-mentor-ok";
+
+function fnv1a(text: string): string {
+  let h = 2166136261;
+  for (const byte of new TextEncoder().encode(text)) {
+    h ^= byte;
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0");
+}
+
+async function checkPassword(input: string): Promise<boolean> {
+  try {
+    if (globalThis.crypto?.subtle) {
+      const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(input)
+      );
+      const hex = Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      if (hex === MENTOR_SHA256) return true;
+    }
+  } catch {
+    /* insecure context or no subtle API - fall through */
+  }
+  return fnv1a(input) === MENTOR_FNV;
+}
+
+function MentorGate({ onUnlock }: { onUnlock: () => void }) {
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!pw || busy) return;
+    setBusy(true);
+    setError(false);
+    const ok = await checkPassword(pw);
+    if (ok) {
+      window.sessionStorage.setItem(UNLOCK_KEY, "1");
+      onUnlock();
+    } else {
+      setError(true);
+      setBusy(false);
+      setPw("");
+    }
+  };
+
+  return (
+    <main className="flex min-h-dvh items-center justify-center px-6">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/[0.04] font-display text-2xl font-bold text-white/70">
+          M
+        </span>
+        <h1 className="mt-5 font-display text-2xl font-bold text-white">
+          Mentor access
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-white/55">
+          This workspace is for program mentors. Enter the mentor password to
+          continue.
+        </p>
+        <form onSubmit={submit} className="mt-6 space-y-3">
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => {
+              setPw(e.target.value);
+              setError(false);
+            }}
+            placeholder="Password"
+            autoFocus
+            className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-center text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
+          />
+          {error && (
+            <p className="text-sm text-rose-400/90">
+              Wrong password. Ask your program lead.
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={busy || !pw}
+            className="w-full rounded-full bg-white px-6 py-3 font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {busy ? "Checking…" : "Unlock"}
+          </button>
+        </form>
+        <p className="mt-5 text-xs text-white/40">
+          The check runs in your browser: nothing is stored or sent.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+type Mode = "roster" | "single" | "team" | "founders";
+
+const MODES: { key: Mode; label: string; hint: string }[] = [
+  {
+    key: "roster",
+    label: "Multiple people",
+    hint: "Cohort snapshot and a card for every student.",
+  },
+  {
+    key: "single",
+    label: "One person",
+    hint: "Deep read for exactly one pasted link.",
+  },
+  {
+    key: "team",
+    label: "Team",
+    hint: "Coverage and watch-pairs per team - use [Team Name] headers.",
+  },
+  {
+    key: "founders",
+    label: "Founders",
+    hint: "Compatibility read for the first two people in your paste.",
+  },
+];
 
 function CodeLetters({ code, size }: { code: string; size: string }) {
   return (
@@ -63,6 +197,7 @@ function CoverageChips({ dims }: { dims: Dimension[] }) {
 }
 
 export default function MentorPage() {
+  const [unlocked, setUnlocked] = useState(false);
   const [raw, setRaw] = useState("");
   const [roster, setRoster] = useState<MentorStudent[] | null>(null);
   const [rejected, setRejected] = useState(0);
@@ -70,6 +205,12 @@ export default function MentorPage() {
   const [teamCount, setTeamCount] = useState(3);
   const [proposals, setProposals] = useState<Team[] | null>(null);
   const [copied, setCopied] = useState(false);
+  const [modes, setModes] = useState<Mode[]>([
+    "roster",
+    "single",
+    "team",
+    "founders",
+  ]);
 
   const cards = useMemo(
     () => (roster ? roster.map(buildCard) : []),
@@ -87,11 +228,34 @@ export default function MentorPage() {
     () => (roster ? courseRecommendations(roster) : []),
     [roster]
   );
-  // Proposals only for students without a declared team.
   const ungroupedCards = useMemo(
     () => cards.filter((c) => !c.student.team),
     [cards]
   );
+  const placeholder = useMemo(() => {
+    if (modes.includes("team")) {
+      return "[Founders]\nMarijs, https://…/results#paei=…&n=Marijs\nElina, https://…/results#paei=…\n\n[Growth]\nRoberts, https://…/results#paei=…";
+    }
+    if (modes.includes("founders") || modes.includes("roster")) {
+      return "Marijs, https://…/results#paei=…&n=Marijs\nElina, https://…/results#paei=…";
+    }
+    return "https://…/results#paei=…&n=Marijs";
+  }, [modes]);
+  const foundersCompat = useMemo(() => {
+    if (!roster || roster.length < 2 || !modes.includes("founders")) {
+      return null;
+    }
+    const a = roster[0];
+    const b = roster[1];
+    return { a, b, report: computeCompatibility(a.results, b.results) };
+  }, [roster, modes]);
+
+  // Restore unlock for this tab (set by MentorGate).
+  useEffect(() => {
+    if (window.sessionStorage.getItem(UNLOCK_KEY) === "1") {
+      setUnlocked(true);
+    }
+  }, []);
 
   const handleAnalyze = useCallback(() => {
     const { students, rejected: rej, teamsSeen: seen } = parseRoster(raw);
@@ -126,7 +290,14 @@ export default function MentorPage() {
 
   const handleCopy = useCallback(async () => {
     if (!roster || roster.length === 0) return;
-    const text = buildSummaryText(roster, snapshot, declared, proposals ?? [], moves, rejected);
+    const text = buildSummaryText(
+      roster,
+      snapshot,
+      declared,
+      proposals ?? [],
+      moves,
+      rejected
+    );
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -134,7 +305,34 @@ export default function MentorPage() {
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [roster, snapshot, declared, proposals, moves]);
+  }, [roster, snapshot, declared, proposals, moves, rejected]);
+
+  const toggleMode = useCallback((m: Mode) => {
+    setModes((prev) =>
+      prev.includes(m)
+        ? prev.length === 1
+          ? prev
+          : prev.filter((x) => x !== m)
+        : [...prev, m]
+    );
+  }, []);
+
+  if (!unlocked) {
+    return <MentorGate onUnlock={() => setUnlocked(true)} />;
+  }
+
+  const n = roster?.length ?? 0;
+  const showSingle = modes.includes("single") && n === 1;
+  const singleHint = modes.includes("single") && roster !== null && n > 1;
+  const showRosterCards = modes.includes("roster") && n > 0 && !showSingle;
+  const showTeamSection = modes.includes("team") && declared.length > 0;
+  const teamHint =
+    modes.includes("team") && roster !== null && n > 0 && declared.length === 0;
+  const foundersHint =
+    modes.includes("founders") && roster !== null && n === 1;
+  const proposalsOn =
+    modes.includes("roster") || modes.includes("team");
+  const movesOn = modes.includes("roster");
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6">
@@ -155,25 +353,50 @@ export default function MentorPage() {
           Mentor view
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/55">
-          Paste the result links students share with you, one per line, with
-          names if you have them (Name, link). Group students into teams with
-          headers like [Team Name]. You get the cohort snapshot, each
-          student&apos;s archetype and development focus, coverage for every
-          declared team, balanced proposals for everyone else, and
-          course-design moves for the cohort.
-        </p>
-        <p className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/60">
-          <span className="font-medium text-white/80">
-            How to read this:
-          </span>{" "}
-          PAEI shows natural strengths, not ceilings. Use it to set people up
-          to succeed, not to sort them. A missing dimension is a development
-          focus and a hiring hint, never a verdict on the student. Nothing is
-          uploaded: the analysis runs in your browser.
+          Choose what you want to analyze, paste the links, and get only that:
+          a single student, the whole roster, team coverage, or the founders'
+          fit. PAEI shows natural strengths, not ceilings: use it to set people
+          up to succeed, not to sort them. Nothing is uploaded: the analysis
+          runs in your browser.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      {/* Mode selector */}
+      <section>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          What do you want to do?
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {MODES.map((m) => {
+            const active = modes.includes(m.key);
+            return (
+              <button
+                key={m.key}
+                type="button"
+                aria-pressed={active}
+                onClick={() => toggleMode(m.key)}
+                className={[
+                  "rounded-full border px-4 py-2 text-sm transition-colors",
+                  active
+                    ? "border-white/60 bg-white font-semibold text-black"
+                    : "border-white/15 text-white/55 hover:border-white/40 hover:text-white",
+                ].join(" ")}
+              >
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+        <ul className="mt-3 space-y-1">
+          {MODES.filter((m) => modes.includes(m.key)).map((m) => (
+            <li key={m.key} className="text-xs leading-relaxed text-white/45">
+              {m.label}: {m.hint}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
         <label
           htmlFor="mentor-input"
           className="text-xs font-semibold uppercase tracking-wider text-white/45"
@@ -185,15 +408,13 @@ export default function MentorPage() {
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           rows={10}
-          placeholder={
-            "[Founders]\nMarijs, https://…/results#paei=43521435214352143521\nElina, https://…/results#paei=54321543215432154321\n\n[Growth team]\nRoberts, https://…/results#paei=33445334453344533445\n\nKristaps, https://…/results#paei=55443554435544355443"
-          }
+          placeholder={placeholder}
           className="mt-3 w-full resize-y rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 font-mono text-sm text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
         />
         <p className="mt-2 text-xs text-white/45">
           Headers like [Team Name] group the lines below them. A blank line
-          ends the group, so links after it count as having no team. Headers
-          like [No team] or [Solo] also work for ungrouped students.
+          ends the group, so links after it count as having no team. Several
+          links on one line are fine too - paste chat dumps as they are.
         </p>
       </section>
 
@@ -203,7 +424,7 @@ export default function MentorPage() {
           onClick={handleAnalyze}
           className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
-          Analyze cohort
+          Analyze
         </button>
         {roster && roster.length > 0 && (
           <button
@@ -220,17 +441,149 @@ export default function MentorPage() {
         <p className="mt-4 text-sm text-rose-400/90">
           No valid result links found. Paste complete share links (or their
           20-digit codes).
-          {rejected > 0 && ` ${rejected} line(s) could not be read.`}
+          {rejected > 0 && ` ${rejected} item(s) could not be read.`}
         </p>
       )}
       {roster && roster.length > 0 && rejected > 0 && (
         <p className="mt-4 text-sm text-white/45">
-          {rejected} line(s) could not be read and were skipped.
+          {rejected} item(s) could not be read and were skipped.
         </p>
       )}
 
+      {/* Mode-specific hints when data is missing */}
+      {singleHint && (
+        <p className="mt-4 text-sm text-white/45">
+          One-person view needs exactly one link - you pasted {n}.
+        </p>
+      )}
+      {foundersHint && (
+        <p className="mt-4 text-sm text-white/45">
+          Founders view needs two links - paste the second person.
+        </p>
+      )}
+      {teamHint && (
+        <p className="mt-4 text-sm text-white/45">
+          No teams found - add [Team Name] headers above the links you paste.
+        </p>
+      )}
+
+      {/* ============================================================ ONE PERSON */}
+      {showSingle && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl font-semibold text-white">
+            One person
+          </h2>
+          <p className="mt-2 text-sm text-white/45">
+            Full read for the single pasted link.
+          </p>
+          {cards[0] && (
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <div className="flex flex-wrap items-center gap-4">
+                <CodeLetters code={cards[0].student.code} size="3rem" />
+                <div>
+                  <h3 className="font-display text-xl font-semibold text-white">
+                    {cards[0].student.name}
+                  </h3>
+                  <p className="text-sm text-white/45">
+                    {cards[0].archetype}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-white/60">
+                {cards[0].archetypeLine}
+              </p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm leading-relaxed text-white/65">
+                  <span className="font-medium text-white/80">
+                    Growth edge:{" "}
+                  </span>
+                  {PROFILES[cards[0].weakestLetter].name} -{" "}
+                  {cards[0].growthEdge}
+                </p>
+                <p className="text-sm leading-relaxed text-white/65">
+                  <span className="font-medium text-white/80">
+                    Development focus:{" "}
+                  </span>
+                  {cards[0].devFocus.replace(/^Development focus: /, "")}
+                </p>
+                <p className="text-sm leading-relaxed text-white/65">
+                  <span className="font-medium text-white/80">
+                    Mentor note:{" "}
+                  </span>
+                  {cards[0].mentorNote}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ============================================================ FOUNDERS */}
+      {foundersCompat && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl font-semibold text-white">
+            Founders
+          </h2>
+          <p className="mt-2 text-sm text-white/45">
+            How the first two people in your paste work together.
+          </p>
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[foundersCompat.a, foundersCompat.b].map((s, i) => (
+                <div key={s.id} className="flex items-center gap-4">
+                  <CodeLetters code={s.code} size="1.75rem" />
+                  <div>
+                    <p className="text-xs text-white/45">
+                      {i === 0 ? "First" : "Second"}
+                    </p>
+                    <p className="font-display text-lg font-semibold text-white">
+                      {s.name}
+                    </p>
+                    <p className="text-xs text-white/45">
+                      {cards[i]?.archetype}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${tierTone(
+                  foundersCompat.report.tier
+                )}`}
+              >
+                {foundersCompat.report.tier}
+              </span>
+              <span className="text-xs text-white/45">
+                How you two work together
+              </span>
+            </div>
+            <div className="mt-4 space-y-2">
+              <p className="text-sm leading-relaxed text-white/65">
+                <span className="font-medium text-white/80">
+                  What works:{" "}
+                </span>
+                {foundersCompat.report.whatWorks}
+              </p>
+              <p className="text-sm leading-relaxed text-white/65">
+                <span className="font-medium text-white/80">
+                  Watch for:{" "}
+                </span>
+                {foundersCompat.report.watchFor}
+              </p>
+              <p className="text-sm leading-relaxed text-white/65">
+                <span className="font-medium text-white/80">
+                  Where we lack:{" "}
+                </span>
+                {foundersCompat.report.whereWeLack}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ==================================================== COHORT SNAPSHOT */}
-      {snapshot && (
+      {snapshot && modes.includes("roster") && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Cohort snapshot ({snapshot.size})
@@ -320,7 +673,7 @@ export default function MentorPage() {
       )}
 
       {/* ====================================================== DECLARED TEAMS */}
-      {declared.length > 0 && (
+      {showTeamSection && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Declared teams ({declared.length})
@@ -408,7 +761,7 @@ export default function MentorPage() {
       )}
 
       {/* ============================================================== ROSTER */}
-      {cards.length > 0 && (
+      {showRosterCards && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Students ({cards.length})
@@ -470,7 +823,7 @@ export default function MentorPage() {
       )}
 
       {/* ============================================================ PROPOSALS */}
-      {proposals && proposals.length > 0 && (
+      {proposals && proposalsOn && proposals.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Team proposals
@@ -565,7 +918,7 @@ export default function MentorPage() {
       )}
 
       {/* ==================================================== COURSE MOVES */}
-      {roster && roster.length > 0 && moves.length === 0 && (
+      {movesOn && roster && roster.length > 0 && moves.length === 0 && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Course design moves
@@ -577,7 +930,7 @@ export default function MentorPage() {
           </p>
         </section>
       )}
-      {moves.length > 0 && (
+      {movesOn && moves.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-xl font-semibold text-white">
             Course design moves

@@ -60,7 +60,7 @@ Deploys on **Vercel** with zero configuration — connect the repo and every pus
   results/page.tsx    Results + share
   pair/page.tsx       Co-founder pair check
   cohort/page.tsx     Redirects to mentor view (merged)
-  mentor/page.tsx     Mentor workspace: cohort snapshot, roster, declared teams, proposals, course moves
+  mentor/page.tsx     Password-gated mentor workspace: mode selector, snapshot, teams, proposals, moves
   rate/page.tsx       Rate Your People flow
 /components
   QuestionCard.tsx    Question display
