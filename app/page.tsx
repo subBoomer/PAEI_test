@@ -160,8 +160,20 @@ export default function Home() {
             </p>
           </Link>
           <Link
+            href="/mentor"
+            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
+          >
+            <h3 className="font-display text-lg font-semibold text-white">
+              Mentor view →
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Per-student archetypes and development focus, balanced team
+              proposals, and course-design moves for the cohort.
+            </p>
+          </Link>
+          <Link
             href="/rate"
-            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30 sm:col-span-2"
+            className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
           >
             <h3 className="font-display text-lg font-semibold text-white">
               Rate your people →

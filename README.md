@@ -58,17 +58,27 @@ Deploys on **Vercel** with zero configuration — connect the repo and every pus
   page.tsx            Landing page
   quiz/page.tsx       Quiz (one question at a time)
   results/page.tsx    Results + share
+  pair/page.tsx       Co-founder pair check
+  cohort/page.tsx     Cohort snapshot for teachers
+  mentor/page.tsx     Mentor view: rosters, team proposals, course moves
+  rate/page.tsx       Rate Your People flow
 /components
   QuestionCard.tsx    Question display
-  ScaleSelector.tsx   1–5 answer buttons
+  ScaleSelector.tsx   1-5 answer buttons
   ResultCard.tsx      Large four-letter code
   DimensionCard.tsx   Per-dimension breakdown
 /data
   questions.ts        The 20 questions
   profiles.ts         Dimension profiles, combinations, conflicts
+  perception-questions.ts  16 third-person statements for Rate Your People
 /lib
   scoring.ts          Averages, ranks, code, combos, conflicts
   answers.ts          Browser storage + share-link encoding
+  perception.ts       16 answers -> perceived code
+  compatibility.ts    Two codes -> tier, best-with cards
+  pair.ts             Roster parsing + cohort report
+  mentor.ts           Mentor cards, team generator, course moves
+  rate-session.ts     Rate flow session state
 ```
 
 ## Credits
