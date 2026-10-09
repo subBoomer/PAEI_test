@@ -26,6 +26,17 @@ a {
   touch-action: manipulation;
 }
 
+/* Tailwind v4 leaves buttons with the default arrow cursor; make every
+   clickable element feel clickable for non-technical users. */
+button:not(:disabled),
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 @keyframes q-in {
   from {
     opacity: 0;
@@ -56,9 +67,29 @@ a {
   animation: fade-up 0.45s ease-out both;
 }
 
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .q-enter,
-  .fade-up {
+  .fade-up,
+  .shake {
     animation: none;
   }
 }

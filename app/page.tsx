@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Attribution from "@/components/Attribution";
 import { DIMENSION_ORDER } from "@/data/questions";
 import { PROFILES } from "@/data/profiles";
 
@@ -204,6 +205,9 @@ export default function Home() {
         <p className="mt-1 text-sm text-white/45">
           Results stay in your browser. Nothing is stored or sent anywhere.
         </p>
+        <div className="mt-4">
+          <Attribution />
+        </div>
       </footer>
     </main>
   );

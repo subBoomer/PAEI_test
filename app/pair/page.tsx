@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Attribution from "@/components/Attribution";
 import { PROFILES } from "@/data/profiles";
 import {
   type PairMember,
@@ -313,6 +314,9 @@ export default function PairPage() {
           Both people&apos;s data stays inside the shared link: nothing is sent
           to a server.
         </p>
+        <div className="mt-4">
+          <Attribution />
+        </div>
       </footer>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Attribution from "@/components/Attribution";
 import QuestionCard from "@/components/QuestionCard";
 import { PERCEPTION_QUESTIONS } from "@/data/perception-questions";
 import { PROFILES } from "@/data/profiles";
@@ -892,6 +893,9 @@ export default function RatePage() {
           left off. Use New test to clear it and start over. Nothing is sent
           anywhere. Rated on the PAEI app · Future Leaders - Leadership I.
         </p>
+        <div className="mt-3">
+          <Attribution />
+        </div>
       </footer>
     </main>
   );

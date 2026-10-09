@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Attribution from "@/components/Attribution";
 import ResultCard from "@/components/ResultCard";
 import DimensionCard from "@/components/DimensionCard";
 import { PROFILES } from "@/data/profiles";
@@ -983,9 +984,12 @@ export default function ResultsPage() {
           Based on the PAEI model by Dr. Ichak Adizes. Built for Future Leaders -
           Leadership I.
         </p>
-        <p className="mt-1 text-xs text-white/30">
+        <p className="mt-1 text-xs text-white/45">
           Results are shown to you only: nothing is stored on a server.
         </p>
+        <div className="mt-4">
+          <Attribution />
+        </div>
       </footer>
     </main>
   );
