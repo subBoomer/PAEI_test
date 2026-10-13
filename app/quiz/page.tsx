@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QuestionCard from "@/components/QuestionCard";
+import { SCALE_LABELS } from "@/components/ScaleSelector";
 import { QUESTIONS } from "@/data/questions";
+import { decideSelection } from "@/lib/quizFlow";
 import {
   ANSWER_COUNT,
   clearAnswers,
@@ -17,6 +19,9 @@ import {
   shuffledOrder,
 } from "@/lib/answers";
 
+/** How long a selected answer stays locked before the quiz advances. */
+const ADVANCE_MS = 280;
+
 export default function QuizPage() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -28,6 +33,13 @@ export default function QuizPage() {
   const [order, setOrder] = useState<number[] | null>(null);
   const [ready, setReady] = useState(false);
   const [name, setName] = useState("");
+  // Locked while a just-made selection is being committed and we advance.
+  const [locked, setLocked] = useState(false);
+  const lockedRef = useRef(false);
+  // A different value clicked on an already answered question, awaiting a yes.
+  const [pending, setPending] = useState<{ value: number; from: number } | null>(
+    null
+  );
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resume mid-quiz from sessionStorage on mount (avoids hydration mismatch).
@@ -61,10 +73,21 @@ export default function QuizPage() {
     };
   }, []);
 
-  const handleSelect = useCallback(
+  // Every new question starts unlocked and with no pending change.
+  useEffect(() => {
+    lockedRef.current = false;
+    setLocked(false);
+    setPending(null);
+  }, [current]);
+
+  const commitAnswer = useCallback(
     (value: number) => {
       if (!order) return;
       const questionIndex = order[current];
+      // Lock first: a second click during the advance window is ignored.
+      lockedRef.current = true;
+      setLocked(true);
+      setPending(null);
       setAnswers((prev) => {
         const next = [...prev];
         next[questionIndex] = value;
@@ -74,20 +97,64 @@ export default function QuizPage() {
 
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
       advanceTimer.current = setTimeout(() => {
+        lockedRef.current = false;
+        setLocked(false);
         if (current < ANSWER_COUNT - 1) {
           setCurrent((c) => c + 1);
         } else {
           router.push("/results");
         }
-      }, 280);
+      }, ADVANCE_MS);
     },
     [current, order, router]
   );
 
+  const handleSelect = useCallback(
+    (value: number) => {
+      if (!order) return;
+      const questionIndex = order[current];
+      const decision = decideSelection(
+        answers[questionIndex],
+        value,
+        lockedRef.current
+      );
+      if (decision.kind === "ignore") return;
+      if (decision.kind === "confirm") {
+        // Do not change anything yet: ask first.
+        setPending({ value, from: decision.from });
+        return;
+      }
+      commitAnswer(value);
+    },
+    [answers, commitAnswer, current, order]
+  );
+
+  const confirmChange = useCallback(() => {
+    if (!pending) return;
+    commitAnswer(pending.value);
+  }, [commitAnswer, pending]);
+
+  const cancelChange = useCallback(() => setPending(null), []);
+
   const goBack = useCallback(() => {
     if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    lockedRef.current = false;
+    setLocked(false);
+    setPending(null);
     setCurrent((c) => Math.max(0, c - 1));
   }, []);
+
+  const goNext = useCallback(() => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    lockedRef.current = false;
+    setLocked(false);
+    setPending(null);
+    if (current < ANSWER_COUNT - 1) {
+      setCurrent((c) => c + 1);
+    } else {
+      router.push("/results");
+    }
+  }, [current, router]);
 
   if (!ready || !order) {
     return (
@@ -156,7 +223,41 @@ export default function QuizPage() {
             question={question}
             value={answers[order[current]]}
             onChange={handleSelect}
+            disabled={locked}
+            proposed={pending?.value ?? 0}
           />
+
+          {pending && (
+            <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.08] p-5">
+              <p className="text-sm text-white/80">
+                You picked{" "}
+                <span className="font-semibold text-white">
+                  {SCALE_LABELS[pending.from - 1]}
+                </span>
+                . Change your answer to{" "}
+                <span className="font-semibold text-white">
+                  {SCALE_LABELS[pending.value - 1]}
+                </span>
+                ?
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={confirmChange}
+                  className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
+                >
+                  Yes, change it
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelChange}
+                  className="rounded-full border border-white/20 px-5 py-2 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+                >
+                  Keep {SCALE_LABELS[pending.from - 1]}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -180,14 +281,7 @@ export default function QuizPage() {
         </p>
         <button
           type="button"
-          onClick={() => {
-            if (current < ANSWER_COUNT - 1) {
-              if (advanceTimer.current) clearTimeout(advanceTimer.current);
-              setCurrent((c) => c + 1);
-            } else {
-              router.push("/results");
-            }
-          }}
+          onClick={goNext}
           className="shrink-0 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           {current < ANSWER_COUNT - 1 ? "Skip →" : "See results →"}

@@ -1,9 +1,9 @@
 import { PROFILES } from "@/data/profiles";
-import type { Dimension } from "@/data/questions";
+import { DIMENSION_ORDER, type Dimension } from "@/data/questions";
+import { computeCompatibility, type Tier } from "@/lib/compatibility";
 import {
   type DimensionResult,
   type Rank,
-  computeResults,
   rankFromAverage,
 } from "@/lib/scoring";
 
@@ -27,150 +27,131 @@ export function parseAnswerString(raw: string): number[] | null {
 }
 
 export interface PairMember {
+  /** Display name carried in a share link (&n=), or "You" for a saved result. */
+  name?: string;
   results: DimensionResult[];
   code: string;
-}
-
-export function memberFromAnswers(answers: number[]): PairMember {
-  const results = computeResults(answers);
-  const code = results
-    .map((r) => (r.capital ? r.letter : r.letter.toLowerCase()))
-    .join("");
-  return { results, code };
-}
-
-export interface PairComplement {
-  letter: Dimension;
-  strong: "A" | "B";
-  note: string;
-}
-
-export interface PairTension {
-  a: Dimension;
-  b: Dimension;
-  title: string;
-  note: string;
-}
-
-export interface PairInsight {
-  complements: PairComplement[];
-  tensions: PairTension[];
-  summary: string;
 }
 
 const byLetter = (rs: DimensionResult[]) =>
   new Map(rs.map((r) => [r.letter, r]));
 
+/** "Marijs" / "Person 2" when no name is known. */
+export function memberLabel(m: PairMember, index: number): string {
+  return m.name && m.name.trim() ? m.name.trim() : `Person ${index + 1}`;
+}
+
+export interface GroupRole {
+  letter: Dimension;
+  /** Members who are naturally strong (dominant) on this dimension. */
+  owners: number[];
+  /** Members who score Missing here. */
+  missing: number[];
+  /** Member with the highest average on this dimension. */
+  top: number;
+  topAvg: number;
+}
+
+export interface GroupFriction {
+  a: number;
+  b: number;
+  tier: Tier;
+  watchFor: string;
+}
+
+export interface GroupInsight {
+  size: number;
+  roles: GroupRole[];
+  /** Dimensions nobody is naturally strong in. */
+  gaps: Dimension[];
+  frictions: GroupFriction[];
+  summary: string;
+}
+
 /**
- * Compare two profiles: where they cover each other's gaps,
- * and which classic PAEI tensions run live *between* the two people.
+ * Compare two or more profiles: who owns each seat, which seats nobody
+ * covers, and where friction runs between any pair. The same read serves a
+ * co-founder check, a project team, or a whole group.
  */
-export function pairInsights(mA: PairMember, mB: PairMember): PairInsight {
-  const a = byLetter(mA.results);
-  const b = byLetter(mB.results);
-  const complements: PairComplement[] = [];
-  const tensions: PairTension[] = [];
+export function groupInsights(members: PairMember[]): GroupInsight | null {
+  if (members.length < 2) return null;
 
-  for (const letter of ["P", "A", "E", "I"] as Dimension[]) {
-    const ra = a.get(letter)!;
-    const rb = b.get(letter)!;
-    const name = PROFILES[letter].name;
+  const roles: GroupRole[] = DIMENSION_ORDER.map((letter) => {
+    const owners: number[] = [];
+    const missing: number[] = [];
+    let top = 0;
+    let topAvg = -1;
+    members.forEach((m, i) => {
+      const r = byLetter(m.results).get(letter)!;
+      if (r.capital) owners.push(i);
+      if (r.rank === "Missing") missing.push(i);
+      if (r.average > topAvg) {
+        topAvg = r.average;
+        top = i;
+      }
+    });
+    return { letter, owners, missing, top, topAvg };
+  });
 
-    // One strong, the other missing → the classic coverage gap.
-    if (ra.capital && rb.rank === "Missing") {
-      complements.push({
-        letter,
-        strong: "A",
-        note: `${name} is a natural strength for A but missing for B: this role will fall on A unless it is consciously shared.`,
-      });
-    } else if (rb.capital && ra.rank === "Missing") {
-      complements.push({
-        letter,
-        strong: "B",
-        note: `${name} is a natural strength for B but missing for A: this role will fall on B unless it is consciously shared.`,
-      });
-    } else if (ra.capital && !rb.capital) {
-      complements.push({
-        letter,
-        strong: "A",
-        note: `A leads on ${name} (${ra.average.toFixed(1)} vs ${rb.average.toFixed(1)}). Let A own this dimension by default.`,
-      });
-    } else if (rb.capital && !ra.capital) {
-      complements.push({
-        letter,
-        strong: "B",
-        note: `B leads on ${name} (${rb.average.toFixed(1)} vs ${ra.average.toFixed(1)}). Let B own this dimension by default.`,
-      });
+  // A seat nobody is naturally strong in: a gap for this group.
+  const gaps = roles.filter((r) => r.owners.length === 0).map((r) => r.letter);
+
+  // Friction between any pair (same engine the mentor team view uses).
+  const frictions: GroupFriction[] = [];
+  for (let i = 0; i < members.length; i++) {
+    for (let j = i + 1; j < members.length; j++) {
+      const rep = computeCompatibility(members[i].results, members[j].results);
+      if (rep.tier === "Watch out" || rep.tier === "High friction") {
+        frictions.push({ a: i, b: j, tier: rep.tier, watchFor: rep.watchFor });
+      }
     }
   }
-
-  // Live tensions between people: classic pair (P-A, E-A, P-I, E-I)
-  // where one person leans one side and the other leans the other side.
-  const PAIRS: [Dimension, Dimension, string][] = [
-    ["P", "A", "Speed vs. Structure"],
-    ["E", "A", "Change vs. Stability"],
-    ["P", "I", "Results vs. People"],
-    ["E", "I", "Risk vs. Harmony"],
-  ];
-
-  for (const [x, y, title] of PAIRS) {
-    const ax = a.get(x)!;
-    const ay = a.get(y)!;
-    const bx = b.get(x)!;
-    const by = b.get(y)!;
-    // A leans x while B leans y (or mirrored) — the tension lives between them.
-    const crossed =
-      ax.average - ay.average >= 1.0 && by.average - bx.average >= 1.0;
-    const mirrored =
-      ay.average - ax.average >= 1.0 && bx.average - by.average >= 1.0;
-    if (crossed || mirrored) {
-      const [lead, follow] = crossed ? [x, y] : [y, x];
-      tensions.push({
-        a: lead,
-        b: follow,
-        title,
-        note: `A leans ${PROFILES[lead].name} while B leans ${PROFILES[follow].name}. Expect friction on this axis: name it early and decide who decides.`,
-      });
-    }
-  }
-
-  // Summary
-  const capA = mA.results.filter((r) => r.capital).map((r) => r.letter);
-  const capB = mB.results.filter((r) => r.capital).map((r) => r.letter);
-  const parts: string[] = [];
-  parts.push(
-    `You are ${mA.code} and your partner is ${mB.code}. ` +
-      (capA.length === 0
-        ? "A has no dominant dimension, "
-        : `A's natural strengths: ${capA.join(", ")}. `) +
-      (capB.length === 0
-        ? "B has no dominant dimension."
-        : `B's natural strengths: ${capB.join(", ")}.`)
+  // High friction first, then Watch out.
+  frictions.sort((x, y) =>
+    x.tier === y.tier ? 0 : x.tier === "High friction" ? -1 : 1
   );
-  if (complements.length > 0) {
+
+  const codes = members
+    .map((m, i) => `${memberLabel(m, i)} (${m.code})`)
+    .join(", ");
+  const parts: string[] = [];
+  parts.push(`Reading ${members.length} people: ${codes}.`);
+  if (gaps.length === 0) {
     parts.push(
-      `You cover each other on ${complements
-        .map((c) => c.letter)
-        .join(", ")}: the gaps do not overlap, which is exactly what a founding team needs.`
+      "Between you, all four seats are covered. Name who owns each one so nobody assumes someone else has it."
+    );
+  } else if (gaps.length === 1) {
+    parts.push(
+      `Nobody naturally covers ${PROFILES[gaps[0]].name}: that seat lands on whoever steps up, or quietly goes undone.`
     );
   } else {
     parts.push(
-      "Your strengths overlap rather than complement: powerful when aligned, but expect competition for the same seats."
+      `Nobody naturally covers ${gaps
+        .map((g) => PROFILES[g].name)
+        .join(" or ")}: decide who takes those seats before they go unowned.`
     );
   }
-  if (tensions.length > 0) {
+  if (frictions.length > 0) {
+    const f = frictions[0];
     parts.push(
-      `The live tension between you is ${tensions
-        .map((t) => t.title.toLowerCase())
-        .join(" and ")}.`
+      `The sharpest friction is between ${memberLabel(
+        members[f.a],
+        f.a
+      )} and ${memberLabel(members[f.b], f.b)} (${f.tier}).`
     );
   } else {
     parts.push(
-      "No strong crossed tensions between you: your conflicts will come from shared blind spots instead."
+      "No strong crossed friction between any pair: the risk here is shared blind spots, not clashes."
     );
   }
 
-  return { complements, tensions, summary: parts.join(" ") };
+  return {
+    size: members.length,
+    roles,
+    gaps,
+    frictions,
+    summary: parts.join(" "),
+  };
 }
 
 export interface CohortDimensionStat {

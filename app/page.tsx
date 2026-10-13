@@ -174,11 +174,11 @@ export default function Home() {
             className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/30"
           >
             <h3 className="font-display text-lg font-semibold text-white">
-              Co-founder pair check →
+              Compatibility check →
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-white/50">
-              Paste two result links. See where you cover each other&apos;s
-              gaps and which tensions run between you.
+              Add your own result and two or more people. See who covers which
+              seat, where the gaps are, and where friction runs.
             </p>
           </Link>
           <Link

@@ -7,12 +7,16 @@ interface QuestionCardProps {
   question: Question;
   value: number;
   onChange: (value: number) => void;
+  disabled?: boolean;
+  proposed?: number;
 }
 
 export default function QuestionCard({
   question,
   value,
   onChange,
+  disabled = false,
+  proposed = 0,
 }: QuestionCardProps) {
   return (
     <div className="w-full">
@@ -21,7 +25,12 @@ export default function QuestionCard({
       </h2>
 
       <div className="mt-8">
-        <ScaleSelector value={value} onChange={onChange} />
+        <ScaleSelector
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          proposed={proposed}
+        />
       </div>
 
       <p className="mt-4 text-center text-xs text-white/50">
