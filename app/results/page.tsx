@@ -42,7 +42,22 @@ function mergeWorkEntries(entries: string[]): string[] {
   return kept;
 }
 
-type ShareState = "idle" | "working" | "copied" | "shared" | "error";
+/**
+ * Save a blob as a file. The anchor is appended to the DOM and the object URL
+ * is revoked later on purpose: an immediate revoke can cancel the download in
+ * some browsers, which is why "save" appeared to do nothing.
+ */
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
 
 /** Draw a shareable result image on a canvas. No external dependencies. */
 /**
@@ -227,7 +242,11 @@ export default function ResultsPage() {
   const [answers, setAnswers] = useState<number[] | null>(null);
   const [personName, setPersonName] = useState<string | null>(null);
   const [missing, setMissing] = useState(false);
-  const [shareState, setShareState] = useState<ShareState>("idle");
+  const [linkMsg, setLinkMsg] = useState<string | null>(null);
+  const [copyImgMsg, setCopyImgMsg] = useState<string | null>(null);
+  const [copyImgBusy, setCopyImgBusy] = useState(false);
+  const [saveImgMsg, setSaveImgMsg] = useState<string | null>(null);
+  const [saveImgBusy, setSaveImgBusy] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
   const [copiedReflect, setCopiedReflect] = useState(false);
   const [copiedCoach, setCopiedCoach] = useState(false);
@@ -284,43 +303,71 @@ export default function ResultsPage() {
     if (answers) shareUrlRef.current = shareUrl(answers);
   }, [answers]);
 
-  const handleShareImage = useCallback(async () => {
+  // Put the result image on the clipboard so it can be pasted into chat,
+  // documents, or slides. If image-copy is unsupported (or blocked), save the
+  // file instead so the result is never lost.
+  const handleCopyImage = useCallback(async () => {
     if (!result) return;
-    setShareState("working");
+    setCopyImgBusy(true);
+    setCopyImgMsg(null);
+    const filename = `paei-${result.code}.png`;
+    const blobPromise = drawShareImage(result.code, shareRows, personName);
+    const canWriteImage =
+      typeof ClipboardItem !== "undefined" &&
+      !!navigator.clipboard &&
+      typeof navigator.clipboard.write === "function";
     try {
-      const blob = await drawShareImage(result.code, shareRows, personName);
-      const file = new File([blob], `paei-${result.code}.png`, {
-        type: "image/png",
-      });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `My PAEI code is ${result.code}` });
-        setShareState("shared");
+      if (canWriteImage) {
+        // Give the ClipboardItem a promise so Safari accepts it during the
+        // click too; Chrome and Edge take the resolved PNG.
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blobPromise }),
+        ]);
+        setCopyImgMsg("Image copied ✓");
       } else {
-        // Fallback: download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.name;
-        a.click();
-        URL.revokeObjectURL(url);
-        setShareState("shared");
+        downloadBlob(await blobPromise, filename);
+        setCopyImgMsg("Saved instead ✓");
       }
     } catch {
-      setShareState("error");
+      try {
+        downloadBlob(await blobPromise, filename);
+        setCopyImgMsg("Saved instead ✓");
+      } catch {
+        setCopyImgMsg("Could not copy");
+      }
     }
-    setTimeout(() => setShareState("idle"), 2500);
+    setCopyImgBusy(false);
+    setTimeout(() => setCopyImgMsg(null), 3000);
+  }, [result, shareRows, personName]);
+
+  // Download the result image as a PNG file.
+  const handleSaveImage = useCallback(async () => {
+    if (!result) return;
+    setSaveImgBusy(true);
+    setSaveImgMsg(null);
+    try {
+      const blob = await drawShareImage(result.code, shareRows, personName);
+      downloadBlob(blob, `paei-${result.code}.png`);
+      setSaveImgMsg("Saved ✓");
+    } catch {
+      setSaveImgMsg("Could not save");
+    }
+    setSaveImgBusy(false);
+    setTimeout(() => setSaveImgMsg(null), 3000);
   }, [result, shareRows, personName]);
 
   const handleShareLink = useCallback(async () => {
     if (!shareUrlRef.current) return;
-    setShareState("working");
     try {
       await navigator.clipboard.writeText(shareUrlRef.current);
-      setShareState("copied");
+      setLinkMsg("Link copied ✓");
     } catch {
-      setShareState("error");
+      // Clipboard blocked: still give the user the link.
+      window.prompt("Copy your result link:", shareUrlRef.current);
+      setLinkMsg(null);
+      return;
     }
-    setTimeout(() => setShareState("idle"), 2500);
+    setTimeout(() => setLinkMsg(null), 2500);
   }, []);
 
   const handleCopyResults = useCallback(async () => {
@@ -539,17 +586,6 @@ export default function ResultsPage() {
     );
   }
 
-  const shareLabel =
-    shareState === "working"
-      ? "Working…"
-      : shareState === "copied"
-      ? "Link copied ✓"
-      : shareState === "shared"
-      ? "Shared ✓"
-      : shareState === "error"
-      ? "Something went wrong"
-      : "Share as image";
-
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6">
       <header className="flex items-center justify-between py-6">
@@ -575,21 +611,29 @@ export default function ResultsPage() {
       </section>
 
       {/* Share + actions */}
-      <section className="flex flex-wrap items-center justify-center gap-3 pb-12">
+      <section className="flex flex-wrap items-center justify-center gap-3 pb-4">
         <button
           type="button"
-          onClick={handleShareImage}
-          disabled={shareState === "working"}
+          onClick={handleCopyImage}
+          disabled={copyImgBusy}
           className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition-transform hover:scale-[1.03] active:scale-[0.98] disabled:opacity-60"
         >
-          {shareLabel}
+          {copyImgBusy ? "Working…" : copyImgMsg ?? "Copy image"}
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveImage}
+          disabled={saveImgBusy}
+          className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white disabled:opacity-60"
+        >
+          {saveImgBusy ? "Working…" : saveImgMsg ?? "Save image"}
         </button>
         <button
           type="button"
           onClick={handleShareLink}
           className="rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
         >
-          {shareState === "copied" ? "Copied ✓" : "Copy result link"}
+          {linkMsg ?? "Copy result link"}
         </button>
         <button
           type="button"
@@ -613,6 +657,10 @@ export default function ResultsPage() {
           Retake
         </Link>
       </section>
+      <p className="pb-12 text-center text-xs text-white/40">
+        Copy image puts the picture on your clipboard to paste into chat, docs,
+        or slides. Save image downloads it as a PNG file.
+      </p>
 
       {/* Summary */}
       <section className="border-t border-white/10 py-10">
